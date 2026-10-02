@@ -1,18 +1,15 @@
-# LPO Management
+# LPO Management Overview
 
-ScanApp LPO Management tracks GM LPO parts from shipment by GM through receipt by the Parts Department. ScanApp also tracks LPO issuance to a service RO (optional).
-
-## Features
+ScanApp LPO Management: The system tracks GM LPO parts from shipment by GM through receipt by the Parts Department. ScanApp also tracks LPO issuance to a service RO (optional).
 
 - GM shipment data automatically provides all incoming LPO information.
-- Parts are received using ScanApp's handheld scanner and recorded as an LPO.
-- All information except the service RO and quantity issued is recorded automatically.
-- ScanApp can print LPO labels showing VINL6, part information and a barcode.
-- LPOs remain in Received status until issued.
-- Received and Issued LPOs can be reviewed separately or together.
-- LPO data is never purged.
-- ScanApp links directly to Parts Workbench Plus for Part Numbers, Shipment Numbers and VINL6s.
-- A Shipped but Not Received report shows LPOs currently in transit.
-- Each LPO has a Notes field.
-- LPO records are maintained outside the dealership's operational DMS inventory.
-- No DMS interface is required.
+- Parts are received using ScanApp’s handheld scanner, which records the shipment as an LPO on an easy-to-use and accessible web interface.
+- All information except the service RO and quantity issued is recorded automatically. No need to rekey a thing.
+- ScanApp can print LPO labels showing the last six digits of the VIN (VINL6), part information and a barcode to be attached to the received part for easier physical searching and locating.
+- LPOs remain in Received status until issued. When issued to Service, users can record the service RO with the LPO and the status changes to Issued. The barcode on the ScanApp label can also be scanned as an alternative method of issuing the LPO.
+- Received and Issued LPOs can be reviewed separately or together online or through an exported Excel spreadsheet. All LPO data is held and is never purged.
+- ScanApp links directly to Parts Workbench Plus for easy review of Part Numbers, Shipment Numbers or VINL6s.
+- A Shipped but Not Received report shows all LPOs currently in transit.
+- Users have a Notes field attached to each LPO for comments or reference information.
+- All LPO records are maintained digitally in ScanApp, outside of the dealership's operational DMS inventory.
+- No DMS interface required.
