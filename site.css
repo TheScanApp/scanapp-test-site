@@ -20,3 +20,12 @@
 .action-btn{font-size:24px!important;padding:18px 30px!important;min-width:300px;display:inline-flex!important;align-items:center;justify-content:center;gap:14px}.action-btn img{width:36px;height:36px;object-fit:contain}.footer a{color:#fff;text-decoration:none}.footer a:hover{text-decoration:underline}
 @media(max-width:900px){.hero h1{white-space:normal}.process-title{min-height:0}.dept-grid .dept:nth-child(2) img{transform:scale(1.08)}}
 @media(max-width:600px){.action-btn{font-size:21px!important;min-width:0;width:100%;max-width:360px;padding:17px 22px!important}.action-btn img{width:32px;height:32px}.process-item{display:grid}.process-item>div{display:block}.process-sub{margin-top:2px}}
+
+/* Mobile LPO hero correction */
+@media(max-width:600px){
+ .hero .hero-inner{display:block!important}
+ .lpo-hero-art{min-height:0!important;height:auto!important;margin-top:28px;display:block!important;position:relative!important}
+ .lpo-people{padding:0!important;display:flex!important;align-items:flex-end!important;justify-content:center!important;position:relative!important}
+ .lpo-people img{width:46%!important;max-width:190px!important}
+ .hero-lpo-box{position:absolute!important;right:2%!important;bottom:0!important;width:25%!important;max-width:110px!important}
+}
