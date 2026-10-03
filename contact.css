@@ -77,13 +77,13 @@
  .contact-symbol{width:clamp(42px,7vw,57px)}
  .contact-phone-label{font-size:.7em;margin-bottom:2px}
  .contact-email{font-size:clamp(15px,2.9vw,23px)}
- /* Actions and illustration share a row: the face rises beside the name/buttons. */
+ /* Actions and illustration share a row without overlapping the founder title. */
  .contact-ctas{grid-column:1;grid-row:2;width:90%;max-width:350px;gap:12px;margin:0 0 0 10%;align-self:start}
  .contact-cta{height:54px;gap:8px;padding:8px 9px;font-size:clamp(13px,3.6vw,22px)}
  .contact-demo>img,.contact-linkedin-mark{width:clamp(22px,6.5vw,40px);height:clamp(22px,6.5vw,40px)}
  .contact-linkedin-mark{font-size:clamp(21px,5.8vw,36px)}
  .contact-external{display:none}
- .contact-illustration{position:relative;inset:auto;grid-column:1/-1;grid-row:2;margin-top:-38px;aspect-ratio:1.13;z-index:0;min-height:255px}
+ .contact-illustration{position:relative;inset:auto;grid-column:1/-1;grid-row:2;margin-top:-16px;aspect-ratio:1.13;z-index:0;min-height:255px}
  .contact-portrait{width:74%;right:0;top:0;bottom:auto;aspect-ratio:1.08}
  .contact-desktop{left:0;height:34%;bottom:0;border-top-width:4px}
  .contact-desktop:after{background:none}
@@ -96,6 +96,6 @@
  .contact-detail{gap:11px}
  .contact-email{font-size:14px}
  .contact-cta{font-size:13px;gap:6px;padding:8px 6px;height:50px}
- .contact-illustration{margin-top:-32px}
+ .contact-illustration{margin-top:-12px}
 }
 @media(prefers-reduced-motion:reduce){.contact-stage *{scroll-behavior:auto}}
