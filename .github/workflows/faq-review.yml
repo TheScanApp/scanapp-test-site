@@ -1,0 +1,45 @@
+name: FAQ and shared navigation review
+on:
+  push:
+    branches: [faq-add-20261003, main]
+    paths: [faq.html, faq.css, site.js, .github/review/faq-review.cjs, .github/workflows/faq-review.yml]
+permissions:
+  contents: read
+concurrency:
+  group: faq-review-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare browser
+        run: |
+          npm install --no-audit --no-fund --prefix "$RUNNER_TEMP/faq-review" playwright
+          if command -v google-chrome >/dev/null; then
+            echo "CHROME_BIN=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          else
+            "$RUNNER_TEMP/faq-review/node_modules/.bin/playwright" install --with-deps chromium
+          fi
+      - name: Test FAQ and navigation with repository assets
+        env:
+          NODE_PATH: ${{ runner.temp }}/faq-review/node_modules
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/faq-server.log 2>&1 &
+          node .github/review/faq-review.cjs
+      - name: Verify published FAQ and shared menu
+        if: github.ref == 'refs/heads/main'
+        env:
+          NODE_PATH: ${{ runner.temp }}/faq-review/node_modules
+          REVIEW_LIVE: '1'
+        run: node .github/review/faq-review.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: faq-review-${{ github.sha }}-${{ github.ref_name }}
+          path: faq-review-results/
+          retention-days: 3

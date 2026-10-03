@@ -1,0 +1,40 @@
+/* FAQ content only. The header, navigation and footer use the shared site files. */
+.faq-container{width:100%;max-width:1200px;margin:0 auto;padding:0 6%}
+.faq-banner{background:var(--black);color:#fff;border-bottom:5px solid var(--red);padding:48px 0 52px}
+.faq-kicker{color:#ff3d44;font-size:15px;font-weight:800;letter-spacing:.18em;margin:0 0 15px}
+.faq-banner h1{font-size:clamp(34px,4.3vw,60px);line-height:1.06;letter-spacing:-.035em;margin:0;max-width:950px}
+.faq-content{padding-top:28px;padding-bottom:54px}
+.faq-item{border-bottom:1px solid var(--line);scroll-margin-top:120px}
+.faq-item summary{display:grid;grid-template-columns:36px minmax(0,1fr) 24px;gap:18px;align-items:start;list-style:none;padding:25px 0;cursor:pointer}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-number{color:var(--red);font-size:15px;font-weight:800;line-height:1.6;padding-top:2px}
+.faq-question{font-size:clamp(18px,1.55vw,23px);font-weight:700;line-height:1.35}
+.faq-toggle{position:relative;width:22px;height:22px;margin-top:3px;flex:none}
+.faq-toggle:before,.faq-toggle:after{content:'';position:absolute;background:var(--red);left:3px;top:10px;width:16px;height:2px}
+.faq-toggle:after{transform:rotate(90deg)}
+.faq-item[open] .faq-toggle:after{display:none}
+.faq-item summary:hover .faq-question{color:var(--red)}
+.faq-item summary:focus-visible{outline:3px solid var(--red);outline-offset:4px}
+.faq-answer{padding:0 42px 25px 54px;color:var(--ink);font-size:18px;line-height:1.7;overflow-wrap:break-word}
+.faq-answer p{margin:0 0 15px}
+.faq-answer p:last-child{margin-bottom:0}
+.faq-answer ol{padding-left:24px;margin:0 0 18px}
+.faq-answer li{padding-left:3px;margin-bottom:8px}
+.faq-guides{display:flex;align-items:center;justify-content:space-between;gap:24px;padding-top:35px}
+.faq-guides h2{font-size:27px;line-height:1.15;margin:0 0 7px}
+.faq-guides p{margin:0;color:var(--muted);font-size:17px}
+.faq-guides .btn{margin:0;white-space:nowrap}
+.faq-guides .btn span{margin-left:12px}
+@media(max-width:600px){
+ .faq-container{padding-left:6%;padding-right:6%}
+ .faq-banner{padding:32px 0 36px}
+ .faq-kicker{margin-bottom:12px}
+ .faq-banner h1{font-size:clamp(34px,8.8vw,48px)}
+ .faq-content{padding-top:14px;padding-bottom:38px}
+ .faq-item summary{grid-template-columns:25px minmax(0,1fr) 20px;gap:10px;padding:21px 0}
+ .faq-number{font-size:13px}
+ .faq-question{font-size:18px}
+ .faq-toggle{width:20px;height:20px}
+ .faq-answer{font-size:16px;line-height:1.6;padding:0 0 24px 35px}
+ .faq-guides{align-items:flex-start;flex-direction:column;gap:18px;padding-top:28px}
+}
