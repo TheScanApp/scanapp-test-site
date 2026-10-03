@@ -89,3 +89,12 @@
 .receiving-depts .dept p{margin:0}
 @media(max-width:900px){.receiving-depts{grid-template-columns:1fr}.receiving-depts .dept{grid-template-columns:88px 1fr}}
 @media(max-width:600px){.receiving-depts .dept{grid-template-columns:76px 1fr}.receiving-depts .dept img,.receiving-depts .dept:nth-child(2) img{width:76px;height:98px}}
+
+
+/* LPO benefits across dealership: characters beside copy at all sizes */
+@media(max-width:600px){
+ .dept-grid .dept{display:grid!important;grid-template-columns:88px 1fr!important;gap:16px!important;align-items:start!important}
+ .dept-grid .dept img,.dept-grid .dept:nth-child(2) img{width:88px!important;height:112px!important;max-height:none!important;object-fit:contain!important;object-position:top center!important;transform:none!important}
+ .dept-grid .dept h3{margin:0 0 8px!important}
+ .dept-grid .dept p{margin:0!important}
+}
