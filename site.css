@@ -12,3 +12,11 @@
 @media(min-width:901px){.hero .hero-inner{grid-template-columns:minmax(430px,1fr) minmax(430px,1fr)!important}.hero h1{font-size:52px!important;max-width:620px}.hero p{max-width:620px}}
 @media(max-width:900px){.lpo-hero-art{min-height:360px}.lpo-people{padding-right:20%}.hero-lpo-box{width:36%!important}}
 @media(max-width:600px){.lpo-hero-art{min-height:300px}.lpo-people{padding-right:15%}.lpo-people img{width:48%!important}.hero-lpo-box{width:34%!important}.hero h1{font-size:38px!important}}
+
+/* Approved LPO polish */
+.hero h1{white-space:nowrap;font-size:clamp(34px,3.3vw,54px)!important}
+.process-item{display:flex;flex-direction:column}.process-item img{order:0}.process-item>div{order:1;display:flex;flex-direction:column;flex:1}.process-title{min-height:36px}.process-sub{order:2;margin-top:2px}.process-item p{order:3}
+.dept-grid .dept:nth-child(2) img{transform:scale(1.12);transform-origin:bottom center}
+.action-btn{font-size:24px!important;padding:18px 30px!important;min-width:300px;display:inline-flex!important;align-items:center;justify-content:center;gap:14px}.action-btn img{width:36px;height:36px;object-fit:contain}.footer a{color:#fff;text-decoration:none}.footer a:hover{text-decoration:underline}
+@media(max-width:900px){.hero h1{white-space:normal}.process-title{min-height:0}.dept-grid .dept:nth-child(2) img{transform:scale(1.08)}}
+@media(max-width:600px){.action-btn{font-size:21px!important;min-width:0;width:100%;max-width:360px;padding:17px 22px!important}.action-btn img{width:32px;height:32px}.process-item{display:grid}.process-item>div{display:block}.process-sub{margin-top:2px}}
