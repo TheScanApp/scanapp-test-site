@@ -72,3 +72,10 @@
 @media(min-width:901px){
   .hero .hero-inner > div:first-child h1{font-size:clamp(38px,3vw,50px)!important}
 }
+
+
+/* Receiving hero character */
+.receiving-hero-art{display:flex;align-items:flex-end;justify-content:center;align-self:stretch}
+.receiving-hero-art img{display:block;max-height:440px;max-width:100%;width:auto;object-fit:contain;object-position:bottom center}
+@media(max-width:900px){.receiving-hero-art img{max-height:360px}}
+@media(max-width:600px){.receiving-hero-art{margin-top:24px}.receiving-hero-art img{max-height:300px}}
