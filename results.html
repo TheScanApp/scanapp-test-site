@@ -1,22 +1,196 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Results | ScanApp</title><link rel="icon" href="graphics/scanapp%20small%20color.png"><link rel="stylesheet" href="site.css"></head><body><div data-site-header></div>
-
-<section class="hero results-hero"><div class="hero-inner"><div><h1>WHAT DOES THE FIRST TWO HOURS OF YOUR <span class="red">DAY COST?</span></h1><p>Receiving isn't an isolated Parts task. Until inbound inventory is received, everyone waiting for those parts is waiting too.</p><p><strong>Two hours of receiving time doesn't just cost two hours of payroll. It delays everything downstream.</strong></p></div><div class="results-accountant"><div class="results-thought">LABOUR.<br>TECHNICIANS.<br>WHOLESALE.<br>CUSTOMERS.<br><strong>IT ADDS UP.</strong></div><div class="results-calculator">123<br>456<br>789<br><span>TIME = MONEY</span></div></div></div></section>
-
-<main class="wrap results-page"><h2>Real Results. <span class="red">Real Dealerships.</span></h2><p class="lead">Measured improvements from dealership operations using ScanApp.</p>
-<div class="results-stats">
-<div class="result-card"><div class="stat">2 hours → 20 minutes</div><p>Observed daily receiving-time reduction at an early ScanApp dealership.</p></div>
-<div class="result-card"><div class="stat">1.5 hours → 30 minutes</div><p>Observed daily receiving-time reduction at another ScanApp dealership.</p></div>
-<div class="result-card"><div class="stat">$5K–$10K / month</div><p>Potential returns identified through improved LPO control at Roy Foss.</p></div>
-</div></main>
-
-<section class="black results-not-scanner"><div class="wrap"><div class="split"><div class="not-scanner-mark"><div class="scanner-symbol">⌁</div><div class="no-slash"></div></div><div><h2>ScanApp is <span class="red">NOT</span> a scanner.</h2><p class="lead">ScanApp is a complete OEM parts importation and control tool.</p><p>Scanning is only one small part of the process. ScanApp brings together DMS purchase orders, OEM shipment data, physical receiving activity and OEM invoice information, then matches, validates and tracks the transaction through the workflow.</p><p><strong>The scanner captures the part. ScanApp controls the information.</strong></p></div></div></div></section>
-
-<section class="wrap results-bottom-line"><div class="split"><div><h2>Get more done. <span class="red">Drive a better bottom line.</span></h2><p class="lead"><strong>ScanApp won't sell another part. That's not what it's designed to do.</strong></p><p>ScanApp is designed to make the operation behind those sales faster, more accurate and less expensive.</p></div><ul class="solution-list results-checks"><li>Reduce receiving time</li><li>Identify exceptions automatically</li><li>Improve inventory accuracy and reliability</li><li>Create accountability and a strong digital audit trail</li><li>Reduce manual work, research and uncertainty</li></ul></div></section>
-
-<section class="black results-equation"><div class="wrap"><div class="split"><div><h2>Revenue is only <span class="red">half the equation.</span></h2><div class="profit-equation">Revenue − Expenses = Profit</div><p>You can improve the bottom line by selling more.</p><p><strong>Or by spending less to accomplish the same work.</strong></p><p>ScanApp does the second one.</p></div><div class="results-ledger"><div>SAME REVENUE</div><div class="red">LOWER EXPENSES</div><div class="results-profit">HIGHER PROFIT</div></div></div></div></section>
-
-<section class="wrap results-flow"><h2>The Downstream Effect</h2><p class="lead">When parts move faster, the rest of the operation can move faster too.</p><div class="downstream-grid"><div><strong>PARTS</strong><span>Received sooner</span></div><b>→</b><div><strong>INVENTORY</strong><span>Available sooner</span></div><b>→</b><div><strong>TECHNICIANS</strong><span>Get parts sooner</span></div><b>→</b><div><strong>SERVICE</strong><span>Bays move sooner</span></div><b>→</b><div><strong>WHOLESALE</strong><span>Orders leave sooner</span></div><b>→</b><div><strong>CUSTOMERS</strong><span>Wait less</span></div></div></section>
-
-<section class="black results-close"><div class="wrap"><div class="split"><div><h2>Faster is good. <span class="red">Controlled is better.</span></h2><p>ScanApp gives the dealership speed, accuracy, exception management and accountability with a complete audit trail from shipment through receipt and reconciliation.</p><p><strong>Less time. Fewer errors. Better control. Lower operating cost.</strong></p><a class="btn action-btn" href="contact.html"><img src="graphics/S%20ICON_WHITE.png" alt="">SEE IT IN ACTION</a></div><div class="results-control-list"><strong>✓ SPEED</strong><strong>✓ ACCURACY</strong><strong>✓ CONTROL</strong><strong>✓ ACCOUNTABILITY</strong><strong>✓ AUDIT TRAIL</strong></div></div></div></section>
-
-<div data-site-footer></div><script src="site.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Results | ScanApp</title>
+<meta name="description" content="ScanApp is more than a scanner. Explore anonymous dealership receiving results and how complete OEM parts importation and control help reduce delays, errors and operating costs.">
+<link rel="icon" href="graphics/scanapp%20small%20color.png">
+<link rel="stylesheet" href="site.css">
+<style>
+/* Results-only styles. Shared site navigation and other pages are unchanged. */
+#results-content{--r-red:#d71920;--r-dark:#0b0b0c;font-family:Arial,Helvetica,sans-serif;line-height:1.55;color:#171717}
+#results-content *{box-sizing:border-box}
+#results-content .r-shell{width:min(1280px,90%);margin-inline:auto;padding-block:clamp(36px,4vw,60px)}
+#results-content .r-dark{background:var(--r-dark);color:#fff}
+#results-content .r-light{background:linear-gradient(115deg,#fff,#eeeeef)}
+#results-content .r-red{color:var(--r-red)}
+#results-content h1,#results-content h2,#results-content h3{margin:0;font-weight:800;line-height:1.08;letter-spacing:-.02em}
+#results-content h1{font-size:clamp(31px,3.3vw,48px)}
+#results-content h2{font-size:clamp(27px,2.8vw,40px)}
+#results-content p{font-size:clamp(16px,1.3vw,18px);margin:18px 0 0}
+#results-content img{display:block;max-width:100%;height:auto}
+#results-content figure{margin:0;min-width:0}
+#results-content .r-subhead{font-size:clamp(19px,1.65vw,23px);font-weight:700;line-height:1.3}
+#results-content .r-hero-grid{display:grid;grid-template-columns:.98fr 1.12fr;gap:32px;align-items:end;padding-top:38px;padding-bottom:0}
+#results-content .r-hero-copy{min-width:0;padding-block:18px 52px}
+#results-content .r-hero-copy p{max-width:570px;color:#eee}
+#results-content .r-hero-image{width:100%;align-self:end}
+#results-content .r-proof{text-align:center}
+#results-content .r-intro{margin-top:12px}
+#results-content .r-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:36px}
+#results-content .r-result{padding:0 28px}
+#results-content .r-result+.r-result{border-left:1px solid #bfc0c2}
+#results-content .r-result h3{font-size:17px;letter-spacing:.04em;line-height:1.25;min-height:42px}
+#results-content .r-result>p:last-child{max-width:280px;margin:20px auto 0}
+#results-content .r-time{display:flex;flex-direction:column;align-items:center;font-size:clamp(29px,2.75vw,40px);font-weight:800;line-height:1.05;margin-top:12px}
+#results-content .r-time-arrow{color:var(--r-red);font-size:30px;line-height:1}
+#results-content .r-opportunity{min-height:112px;display:flex;flex-direction:column;justify-content:center;gap:12px;line-height:1.15;margin-top:12px}
+#results-content .r-opportunity strong{font-size:clamp(32px,3.15vw,46px);line-height:1;white-space:nowrap}
+#results-content .r-opportunity>span{font-size:16px;font-weight:800;line-height:1.2}
+#results-content .r-note{font-size:13px;color:#606066;margin-top:28px}
+#results-content .r-platform-grid{display:grid;grid-template-columns:.7fr 1.45fr .85fr;gap:30px;align-items:center}
+#results-content .r-scanner{width:100%;max-width:280px;justify-self:center}
+#results-content .r-platform-copy h2{font-size:clamp(28px,2.3vw,35px)}
+#results-content .r-platform-copy p{font-size:16px}
+#results-content .r-platform-copy .r-subhead{font-size:clamp(19px,1.65vw,23px)}
+#results-content .r-software{width:100%;max-width:370px;justify-self:center}
+#results-content .r-software figcaption{font-size:12px;color:#bfc0c2;text-align:center;margin-top:8px}
+#results-content .r-bottom-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:center}
+#results-content .r-checks{list-style:none;margin:0;padding:4px 0 4px 38px;border-left:3px solid var(--r-red)}
+#results-content .r-checks li{display:flex;gap:14px;align-items:flex-start;margin:13px 0;font-size:clamp(16px,1.45vw,20px);line-height:1.35}
+#results-content .r-checks li::before{content:'✓';flex:0 0 24px;width:24px;height:24px;border-radius:50%;background:var(--r-red);color:white;text-align:center;font-weight:800;line-height:24px}
+#results-content .r-profit-grid{display:grid;grid-template-columns:.92fr 1.08fr;gap:36px;align-items:center;padding-bottom:20px}
+#results-content .r-equation{display:inline-block;border:3px solid var(--r-red);padding:13px 18px;font-size:clamp(19px,2vw,29px);font-weight:800;line-height:1.3;margin:23px 0 6px}
+#results-content .r-profit-figure img{width:100%}
+#results-content .r-profit-figure figcaption{font-size:12px;text-align:center;color:#c2c2c7;margin:10px 0 0}
+#results-content .r-flow{text-align:center}
+#results-content .r-flow-subhead{font-size:clamp(18px,1.7vw,24px);font-weight:800;margin-top:10px}
+#results-content .r-flow-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:30px;list-style:none;padding:0;margin:32px 0 0}
+#results-content .r-flow-step{position:relative;min-width:0}
+#results-content .r-flow-step:not(:last-child)::after{content:'→';position:absolute;top:58px;right:-26px;font-size:30px;line-height:1;color:var(--r-red);font-weight:800}
+#results-content .r-flow-icon{display:block;width:100%;height:150px;overflow:hidden}
+#results-content .r-flow-step h3{font-size:18px;line-height:1.2;margin-top:12px;letter-spacing:0}
+#results-content .r-flow-step p{font-size:15px;line-height:1.35;margin:6px 0 0}
+#results-content .r-close-grid{display:grid;grid-template-columns:.95fr 1.05fr;gap:32px;align-items:center;padding-bottom:0}
+#results-content .r-close-copy{padding-bottom:45px}
+#results-content .r-closing-art{display:grid;grid-template-columns:1.18fr .82fr;gap:12px;align-items:end}
+#results-content .r-presenter{display:block;width:100%;height:auto;overflow:hidden}
+#results-content .r-checklist{width:100%;max-width:255px;align-self:center;margin-bottom:28px}
+#results-content .r-cta{display:inline-flex;align-items:center;justify-content:center;gap:12px;max-width:100%;margin-top:24px;background:var(--r-red);color:#fff;padding:17px 24px;text-decoration:none;font-size:20px;font-weight:800;line-height:1.25}
+#results-content .r-cta img{width:32px;height:32px;object-fit:contain}
+#results-content .r-cta:hover{background:#b91219}
+#results-content .r-cta:focus-visible{outline:3px solid white;outline-offset:5px}
+.r-skip{position:absolute;left:20px;top:-80px;background:white;color:#111;padding:12px;z-index:100}
+.r-skip:focus{top:10px}
+#results-content .r-sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(max-width:1050px){
+ #results-content .r-hero-grid{gap:22px;grid-template-columns:1fr 1fr}
+ #results-content .r-platform-grid{grid-template-columns:.65fr 1.35fr;gap:28px}
+ #results-content .r-software{grid-column:2;max-width:320px}
+ #results-content .r-result{padding-inline:20px}
+ #results-content .r-bottom-grid{gap:34px}
+ #results-content .r-flow-grid{gap:24px}
+ #results-content .r-flow-icon{height:120px}
+ #results-content .r-flow-step:not(:last-child)::after{right:-22px;top:45px;font-size:26px}
+ #results-content .r-flow-step h3{font-size:16px}
+}
+@media(max-width:800px){
+ #results-content .r-hero-grid,#results-content .r-bottom-grid,#results-content .r-profit-grid,#results-content .r-close-grid{grid-template-columns:1fr}
+ #results-content .r-hero-grid{padding-top:34px;gap:0}
+ #results-content .r-hero-copy{padding:0 0 24px}
+ #results-content .r-hero-image{max-width:620px;justify-self:center}
+ #results-content .r-stats{grid-template-columns:1fr;gap:28px}
+ #results-content .r-result{padding:0 0 28px}
+ #results-content .r-result+.r-result{border-left:0;border-top:1px solid #bfc0c2;padding-top:28px}
+ #results-content .r-result:last-child{padding-bottom:0}
+ #results-content .r-result h3{min-height:0}
+ #results-content .r-time{font-size:37px;margin-top:18px}
+ #results-content .r-opportunity{min-height:0;margin-top:24px}
+ #results-content .r-opportunity strong{font-size:42px}
+ #results-content .r-bottom-grid{gap:28px}
+ #results-content .r-checks{padding-left:24px}
+ #results-content .r-profit-grid{gap:28px}
+ #results-content .r-profit-figure{max-width:650px;justify-self:center}
+ #results-content .r-flow-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:30px}
+ #results-content .r-flow-icon{height:140px}
+ #results-content .r-flow-step::after{display:none}
+ #results-content .r-close-copy{padding-bottom:0}
+ #results-content .r-closing-art{width:100%;max-width:600px;justify-self:center}
+ #results-content .r-checklist{max-width:245px}
+}
+@media(max-width:520px){
+ #results-content .r-shell{width:89%;padding-block:34px}
+ #results-content .r-hero-grid{padding-bottom:0}
+ #results-content .r-platform-grid{grid-template-columns:1fr;gap:26px}
+ #results-content .r-scanner{width:200px}
+ #results-content .r-software{grid-column:auto;width:280px}
+ #results-content .r-flow-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 22px}
+ #results-content .r-flow-icon{height:130px}
+ #results-content .r-closing-art{grid-template-columns:1fr;justify-items:center;gap:18px}
+ #results-content .r-presenter{max-width:330px}
+ #results-content .r-checklist{width:240px;max-width:85%;margin-bottom:0}
+ #results-content .r-cta{width:100%;padding-inline:12px;font-size:19px}
+ #results-content .r-equation{padding:12px;font-size:19px}
+}
+@media(prefers-reduced-motion:reduce){#results-content *{scroll-behavior:auto}}
+</style>
+</head>
+<body data-results-version="illustrated-anonymous-1">
+<a class="r-skip" href="#results-content">Skip to results</a>
+<div data-site-header></div>
+<main id="results-content">
+<section class="r-dark" aria-labelledby="results-title">
+<div class="r-shell r-hero-grid">
+<div class="r-hero-copy">
+<h1 id="results-title">WHAT DOES THE FIRST TWO HOURS OF YOUR <span class="r-red">DAY COST?</span></h1>
+<p>Receiving isn't an isolated Parts task.  Until inbound inventory is received, everyone waiting for those parts is waiting too.</p>
+<p>Technicians wait.  Service bays wait.  Wholesale orders wait.  Customers wait.  Parts staff spend time reconciling discrepancies instead of doing productive work.</p>
+<p><strong>Two hours of receiving time doesn't just cost two hours of payroll.  It delays everything downstream.</strong></p>
+</div>
+<img class="r-hero-image" src="graphics/ChatGPT%20Image%20Oct%203%2C%202026%2C%2005_47_46%20PM-1.png" width="1448" height="1086" fetchpriority="high" alt="An accountant considers labour costs, waiting technicians, wholesale orders and customers beside a calculator, paperwork and a Time Costs Money mug.">
+</div>
+</section>
+<section class="r-light r-proof" aria-labelledby="proof-title">
+<div class="r-shell">
+<h2 id="proof-title">REAL RESULTS. <span class="r-red">REAL DEALERSHIPS.</span></h2>
+<p class="r-intro">Less time receiving.  More control over the operation.</p>
+<div class="r-stats">
+<article class="r-result"><h3>DAILY RECEIVING</h3><p class="r-time"><span class="r-red">2 HOURS</span><span class="r-time-arrow" aria-hidden="true">↓</span><span><span class="r-sr-only">reduced to </span>20 MINUTES</span></p><p>Observed daily receiving-time reduction at one dealership using ScanApp.</p></article>
+<article class="r-result"><h3>ANOTHER RECEIVING EXAMPLE</h3><p class="r-time"><span class="r-red">1.5 HOURS</span><span class="r-time-arrow" aria-hidden="true">↓</span><span><span class="r-sr-only">reduced to </span>30 MINUTES</span></p><p>Observed daily receiving-time reduction at another dealership using ScanApp.</p></article>
+<article class="r-result"><h3>RETURNS OPPORTUNITY</h3><p class="r-opportunity"><strong class="r-red">$5K–$10K</strong><span>PER MONTH IN POTENTIAL RETURNS</span></p><p>A potential parts returns opportunity identified at a dealership.  Opportunity—not realized savings.</p></article>
+</div>
+<p class="r-note">Anonymous dealership examples.  Results depend on the operation; potential returns are not guaranteed recoveries.</p>
+</div>
+</section>
+<section class="r-dark" aria-labelledby="platform-title">
+<div class="r-shell r-platform-grid">
+<img class="r-scanner" src="graphics/ChatGPT%20Image%20Oct%203%2C%202026%2C%2005_48_08%20PM-2.png" width="1254" height="1254" loading="lazy" decoding="async" alt="A barcode scanner crossed out: ScanApp is not just a scanner.">
+<div class="r-platform-copy"><h2 id="platform-title">ScanApp is <span class="r-red">NOT</span> a scanner.</h2><p class="r-subhead">ScanApp is a complete OEM parts importation and control tool.</p><p>Scanning is only one small part of the process.  ScanApp brings together DMS purchase orders, OEM shipment data, physical receiving activity and OEM invoice information, then matches, validates and tracks the transaction through the workflow.</p><p><strong>The scanner captures the part.  ScanApp controls the information.</strong></p></div>
+<figure class="r-software"><img src="graphics/lpo-software.png" width="1024" height="768" loading="lazy" decoding="async" alt="ScanApp software illustration on a laptop."><figcaption>Software illustration.</figcaption></figure>
+</div>
+</section>
+<section class="r-light" aria-labelledby="cost-title">
+<div class="r-shell r-bottom-grid">
+<div><h2 id="cost-title">GET MORE DONE.<br><span class="r-red">DRIVE A BETTER BOTTOM LINE.</span></h2><p class="r-subhead">ScanApp won't sell another part.<br>That's not what it's designed to do.</p><p>ScanApp is designed to make the operation behind those sales faster, more accurate and less expensive.</p></div>
+<ul class="r-checks"><li>Reduce receiving time</li><li>Identify exceptions automatically</li><li>Improve inventory accuracy and reliability</li><li>Create accountability and a strong digital audit trail</li><li>Reduce manual work, research and uncertainty</li></ul>
+</div>
+</section>
+<section class="r-dark" aria-labelledby="profit-title">
+<div class="r-shell r-profit-grid">
+<div><h2 id="profit-title">REVENUE IS ONLY<br><span class="r-red">HALF THE EQUATION.</span></h2><p class="r-equation">Revenue − Expenses = Profit</p><p>You can improve the bottom line by selling more.</p><p><strong>Or by spending less to accomplish the same work.</strong></p><p>ScanApp does the second one.</p></div>
+<figure class="r-profit-figure"><img src="graphics/ChatGPT%20Image%20Oct%203%2C%202026%2C%2005_48_12%20PM-3.png" width="1448" height="1086" loading="lazy" decoding="async" alt="An accountant points to a whiteboard: Same revenue. Lower expenses. Higher profit."><figcaption>Illustration of the principle, not a measured savings percentage.</figcaption></figure>
+</div>
+</section>
+<section class="r-light r-flow" aria-labelledby="flow-title">
+<div class="r-shell"><h2 id="flow-title">THE DOWNSTREAM EFFECT</h2><p class="r-flow-subhead">WHEN PARTS MOVE FASTER, <span class="r-red">EVERYONE WINS.</span></p>
+<ol class="r-flow-grid">
+<li class="r-flow-step"><svg class="r-flow-icon" viewBox="55 195 245 230" aria-hidden="true" focusable="false"><defs><clipPath id="r-flow-clip-1" clipPathUnits="userSpaceOnUse"><rect x="55" y="195" width="245" height="230"/></clipPath></defs><image clip-path="url(#r-flow-clip-1)" href="graphics/ChatGPT%20Image%20Oct%203%2C%202026%2C%2005_48_15%20PM-4.png" width="2172" height="724"/></svg><h3>Parts</h3><p>Received sooner</p></li>
+<li class="r-flow-step"><svg class="r-flow-icon" viewBox="400 190 250 230" aria-hidden="true" focusable="false"><defs><clipPath id="r-flow-clip-2" clipPathUnits="userSpaceOnUse"><rect x="400" y="190" width="250" height="230"/></clipPath></defs><image clip-path="url(#r-flow-clip-2)" href="graphics/ChatGPT%20Image%20Oct%203%2C%202026%2C%2005_48_15%20PM-4.png" width="2172" height="724"/></svg><h3>Inventory</h3><p>Available sooner</p></li>
+<li class="r-flow-step"><svg class="r-flow-icon" viewBox="770 185 230 245" aria-hidden="true" focusable="false"><defs><clipPath id="r-flow-clip-3" clipPathUnits="userSpaceOnUse"><rect x="770" y="185" width="230" height="245"/></clipPath></defs><image clip-path="url(#r-flow-clip-3)" href="graphics/ChatGPT%20Image%20Oct%203%2C%202026%2C%2005_48_15%20PM-4.png" width="2172" height="724"/></svg><h3>Technicians</h3><p>Get parts sooner</p></li>
+<li class="r-flow-step"><svg class="r-flow-icon" viewBox="1100 195 275 225" aria-hidden="true" focusable="false"><defs><clipPath id="r-flow-clip-4" clipPathUnits="userSpaceOnUse"><rect x="1100" y="195" width="275" height="225"/></clipPath></defs><image clip-path="url(#r-flow-clip-4)" href="graphics/ChatGPT%20Image%20Oct%203%2C%202026%2C%2005_48_15%20PM-4.png" width="2172" height="724"/></svg><h3>Service bays</h3><p>Move sooner</p></li>
+<li class="r-flow-step"><svg class="r-flow-icon" viewBox="1460 200 300 220" aria-hidden="true" focusable="false"><defs><clipPath id="r-flow-clip-5" clipPathUnits="userSpaceOnUse"><rect x="1460" y="200" width="300" height="220"/></clipPath></defs><image clip-path="url(#r-flow-clip-5)" href="graphics/ChatGPT%20Image%20Oct%203%2C%202026%2C%2005_48_15%20PM-4.png" width="2172" height="724"/></svg><h3>Wholesale orders</h3><p>Leave sooner</p></li>
+<li class="r-flow-step"><svg class="r-flow-icon" viewBox="1840 200 315 220" aria-hidden="true" focusable="false"><defs><clipPath id="r-flow-clip-6" clipPathUnits="userSpaceOnUse"><rect x="1840" y="200" width="315" height="220"/></clipPath></defs><image clip-path="url(#r-flow-clip-6)" href="graphics/ChatGPT%20Image%20Oct%203%2C%202026%2C%2005_48_15%20PM-4.png" width="2172" height="724"/></svg><h3>Customers</h3><p>Get what they’re waiting for sooner</p></li>
+</ol></div>
+</section>
+<section class="r-dark" aria-labelledby="control-title">
+<div class="r-shell r-close-grid">
+<div class="r-close-copy"><h2 id="control-title">Faster is good.<br><span class="r-red">Controlled is better.</span></h2><p>ScanApp gives the dealership speed, accuracy, exception management and accountability with a complete audit trail from shipment through receipt and reconciliation.</p><p><strong>Less time.  Fewer errors.  Better control.  Lower operating cost.</strong></p><a class="r-cta" href="contact.html"><img src="graphics/S%20ICON_WHITE.png" width="32" height="32" alt="">SEE IT IN ACTION</a></div>
+<div class="r-closing-art"><svg class="r-presenter" viewBox="140 0 930 870" role="img" aria-label="ScanApp team member holding a tablet and presenting the benefits"><image href="graphics/ChatGPT%20Image%20Oct%203%2C%202026%2C%2005_48_18%20PM-5.png" width="1086" height="1448"/></svg><img class="r-checklist" src="graphics/ChatGPT%20Image%20Oct%203%2C%202026%2C%2005_48_21%20PM-6.png" width="1024" height="1536" loading="lazy" decoding="async" alt="Speed. Accuracy. Control. Accountability. Audit trail."></div>
+</div>
+</section>
+</main>
+<div data-site-footer></div>
+<script src="site.js"></script>
+</body>
+</html>
