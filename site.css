@@ -178,3 +178,39 @@
    padding-bottom:50px!important;
  }
 }
+
+
+/* Shared feature dealership section: identical LPO and Receiving geometry */
+@media(min-width:901px){
+ .feature-dept-grid{
+   display:grid!important;
+   grid-template-columns:repeat(3,minmax(0,1fr))!important;
+   gap:48px!important;
+   align-items:start!important;
+ }
+ .feature-dept-grid .dept{
+   display:grid!important;
+   grid-template-columns:96px minmax(0,1fr)!important;
+   gap:20px!important;
+   align-items:start!important;
+ }
+ .feature-dept-grid .dept img,
+ .feature-dept-grid .dept:nth-child(2) img{
+   width:96px!important;
+   height:126px!important;
+   max-height:126px!important;
+   object-fit:contain!important;
+   object-position:top center!important;
+   transform:none!important;
+   align-self:start!important;
+ }
+ .feature-dept-grid .dept h3{
+   margin:0 0 10px!important;
+   font-size:22px!important;
+   line-height:1.1!important;
+ }
+ .feature-dept-grid .dept p{
+   margin:0!important;
+   line-height:1.55!important;
+ }
+}
