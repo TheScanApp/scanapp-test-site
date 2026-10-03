@@ -98,3 +98,12 @@
  .dept-grid .dept h3{margin:0 0 8px!important}
  .dept-grid .dept p{margin:0!important}
 }
+
+
+/* LPO hero: bottom-align copy and artwork to eliminate dead space */
+@media(min-width:901px){
+ .hero:has(.lpo-hero-art){padding-top:54px;padding-bottom:42px}
+ .hero:has(.lpo-hero-art) .hero-inner{align-items:end!important}
+ .hero:has(.lpo-hero-art) .lpo-hero-art{min-height:0!important;align-self:end}
+ .hero:has(.lpo-hero-art) .lpo-people{align-items:flex-end}
+}
