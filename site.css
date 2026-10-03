@@ -114,3 +114,22 @@
 .lpo-hero-art .lpo-people img,.receiving-hero-art img{width:auto!important;height:360px!important;max-width:100%!important;max-height:360px!important;object-fit:contain!important;object-position:bottom center}
 @media(max-width:900px){.lpo-hero-art .lpo-people img,.receiving-hero-art img{height:320px!important;max-height:320px!important}}
 @media(max-width:600px){.lpo-hero-art .lpo-people{padding-right:25%!important}.lpo-hero-art .lpo-people img,.receiving-hero-art img{height:270px!important;max-height:270px!important;width:auto!important}}
+
+
+/* Keep feature-page hero bands the same height on desktop */
+@media(min-width:901px){
+ .hero:has(.lpo-hero-art),
+ .receiving-hero{
+   height:500px!important;
+   min-height:500px!important;
+   padding-top:42px!important;
+   padding-bottom:42px!important;
+   display:flex!important;
+   align-items:center!important;
+ }
+ .hero:has(.lpo-hero-art) .hero-inner,
+ .receiving-hero .hero-inner{
+   width:100%;
+   align-items:center!important;
+ }
+}
