@@ -1,0 +1,108 @@
+name: Homepage publication verification
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [index.html, features.html, home.css, 'graphics/home/**', .github/workflows/homepage-review.yml]
+permissions:
+  contents: read
+concurrency:
+  group: homepage-review-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare browser
+        run: |
+          npm install --no-audit --no-fund --prefix "$RUNNER_TEMP/scanapp-home-review" playwright
+          if command -v google-chrome >/dev/null; then
+            echo "CHROME_BIN=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          else
+            "$RUNNER_TEMP/scanapp-home-review/node_modules/.bin/playwright" install --with-deps chromium
+          fi
+      - name: Verify actual live homepage and features
+        env:
+          NODE_PATH: ${{ runner.temp }}/scanapp-home-review/node_modules
+        run: |
+          mkdir -p review-results
+          node <<'NODE'
+          const fs = require('node:fs');
+          const crypto = require('node:crypto');
+          const { chromium } = require('playwright');
+          const root = 'https://fuckederful.com';
+          const digest = b => crypto.createHash('sha256').update(b).digest('hex');
+          const assert = (ok, message) => { if (!ok) throw new Error(message); };
+          (async () => {
+            const targets = ['index.html','features.html','home.css','graphics/home/hero-scene-980.avif','graphics/S ICON_RED.png','graphics/S ICON_WHITE.png','graphics/SCANAPP_COLOR.png','graphics/SCANAPP_RED&WHITE.png'];
+            const assets = [];
+            for (const path of targets) {
+              const expected = digest(fs.readFileSync(path));
+              let matched = false;
+              for (let attempt = 0; attempt < 18; attempt++) {
+                try {
+                  const r = await fetch(`${root}/${encodeURI(path).replace(/&/g,'%26')}?verify=${process.env.GITHUB_SHA}`, { signal: AbortSignal.timeout(10000) });
+                  if (r.ok && digest(Buffer.from(await r.arrayBuffer())) === expected) { matched = true; break; }
+                } catch (_) {}
+                await new Promise(r => setTimeout(r, 5000));
+              }
+              assets.push({path,matched,sha256:expected});
+              assert(matched, `Published asset does not match repository: ${path}`);
+            }
+            const browser = await chromium.launch({headless:true, executablePath:process.env.CHROME_BIN || undefined, args:['--no-sandbox']});
+            const results = [];
+            for (const width of [320,390,430,768,900,1024,1440,1920]) {
+              const page = await browser.newPage({viewport:{width,height:1000},deviceScaleFactor:1});
+              const errors = [];
+              page.on('pageerror', e => errors.push(e.message));
+              const response = await page.goto(`${root}/?verify=${process.env.GITHUB_SHA}`, {waitUntil:'networkidle',timeout:45000});
+              await page.evaluate(async () => { await document.fonts.ready; await Promise.all([...document.images].map(i=>i.decode())); });
+              const m = await page.evaluate(() => {
+                const rect = e => { const r=e.getBoundingClientRect(); return {x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height}; };
+                const copy = rect(document.querySelector('.sa-home-copy'));
+                const visual = rect(document.querySelector('.sa-home-visual'));
+                const scene = rect(document.querySelector('.sa-home-scene'));
+                const scanner = document.querySelector('.sa-scanner-mark');
+                const mark = rect(scanner);
+                const styles = getComputedStyle(scanner);
+                const text = document.querySelector('.sa-home-hero').innerText;
+                return {
+                  width:innerWidth,scrollWidth:document.documentElement.scrollWidth,
+                  images:[...document.images].every(i=>i.complete && i.naturalWidth>0),
+                  h1Count:document.querySelectorAll('h1').length,
+                  active:document.querySelector('nav [aria-current="page"]')?.textContent,
+                  noHeroCompatibility:!(/\bLPO\b|\bDMS\b/.test(text)),
+                  scannerLogo:scanner.getAttribute('src')==='graphics/S%20ICON_RED.png' && styles.display!=='none' && styles.visibility!=='hidden' && Number(styles.opacity)>0 && mark.width>20 && mark.x>scene.x && mark.right<scene.right && mark.y>scene.y && mark.bottom<scene.bottom,
+                  noOverlap:innerWidth>800 ? copy.right<=visual.x+1 : copy.bottom<=visual.y+1,
+                  featuresLink:document.querySelector('.sa-home-cta').getAttribute('href')==='features.html',
+                  dmsLink:!!document.querySelector('a[href="features.html#supported-dms"]')
+                };
+              });
+              m.ok=response.ok()&&!errors.length&&m.width===m.scrollWidth&&m.images&&m.h1Count===1&&m.active==='About'&&m.noHeroCompatibility&&m.scannerLogo&&m.noOverlap&&m.featuresLink&&m.dmsLink;
+              await page.screenshot({path:`review-results/home-${width}.png`,fullPage:true});
+              results.push({...m,errors});
+              await page.close();
+            }
+            const page=await browser.newPage({viewport:{width:390,height:1000}});
+            await page.goto(`${root}/features.html?verify=${process.env.GITHUB_SHA}#supported-dms`,{waitUntil:'networkidle'});
+            const features=await page.evaluate(()=>({title:document.querySelector('#supported-dms h2')?.innerText,headings:[...document.querySelectorAll('.sa-dms-grid h3')].map(e=>e.innerText),width:innerWidth,scrollWidth:document.documentElement.scrollWidth}));
+            await page.screenshot({path:'review-results/features-390.png',fullPage:true});
+            await browser.close();
+            const verified=results.every(r=>r.ok)&&features.title==='Supported DMSs'&&features.headings.join('|')==='Quorum|PBS|Reynolds & Reynolds'&&features.width===features.scrollWidth;
+            const result={verified,url:root,commit:process.env.GITHUB_SHA,checkedAt:new Date().toISOString(),assets,screens:results,features};
+            fs.writeFileSync('review-results/live-verification.json',JSON.stringify(result,null,2));
+            console.log('LIVE_HOME_VERIFIED '+JSON.stringify(result));
+            assert(verified,'Homepage review failed; see results and screenshots');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: homepage-review-${{ github.sha }}
+          path: review-results/
+          retention-days: 3
