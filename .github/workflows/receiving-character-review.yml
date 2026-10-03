@@ -1,0 +1,94 @@
+name: Receiving character size review
+on:
+  push:
+    branches: [receiving-character-size-20261003, main]
+    paths: [receiving.html, .github/workflows/receiving-character-review.yml]
+permissions:
+  contents: read
+concurrency:
+  group: receiving-character-review-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare browser
+        run: npm install --no-audit --no-fund --prefix "$RUNNER_TEMP/receiving-review" playwright
+      - name: Verify Receiving characters match LPO on desktop, tablet and mobile
+        env:
+          NODE_PATH: ${{ runner.temp }}/receiving-review/node_modules
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/receiving-review-server.log 2>&1 &
+          node <<'JS'
+          const fs=require('node:fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const live=process.env.GITHUB_REF==='refs/heads/main';
+            const root=live?'https://fuckederful.com':'http://127.0.0.1:4173';
+            if(live){
+              let ready=false;
+              for(let n=0;n<18;n++){
+                try{
+                  const r=await fetch(root+'/receiving.html?verify='+process.env.GITHUB_SHA,{signal:AbortSignal.timeout(10000)});
+                  const html=await r.text();
+                  if(r.ok&&html.includes('id="receiving-character-size"')&&html.includes('scale(1.266)')){ready=true;break;}
+                }catch(_){}
+                await new Promise(r=>setTimeout(r,5000));
+              }
+              if(!ready)throw new Error('Updated Receiving HTML is not live');
+            }
+            const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/google-chrome',args:['--no-sandbox']});
+            const results=[];fs.mkdirSync('receiving-review',{recursive:true});
+            for(const width of [1536,1024,800,600,430,390,360,320]){
+              const p=await browser.newPage({viewport:{width,height:1000}});
+              const errors=[];p.on('pageerror',e=>errors.push(e.message));
+              const pages={};
+              for(const page of ['lpo','receiving']){
+                const response=await p.goto(root+'/'+page+'.html?verify='+process.env.GITHUB_SHA,{waitUntil:'networkidle'});
+                const m=await p.evaluate(async()=>{
+                  const list=[];
+                  for(const img of document.querySelectorAll('.feature-dept-grid .dept>img')){
+                    await img.decode();
+                    const canvas=document.createElement('canvas');canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
+                    const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0);
+                    const d=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+                    let x0=canvas.width,y0=canvas.height,x1=0,y1=0;
+                    for(let y=0;y<canvas.height;y++)for(let x=0;x<canvas.width;x++)if(d[(y*canvas.width+x)*4+3]>10){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);}
+                    const r=img.getBoundingClientRect(),s=getComputedStyle(img),text=img.nextElementSibling.getBoundingClientRect();
+                    const scale=Math.min(r.width/img.naturalWidth,r.height/img.naturalHeight);
+                    const left=r.x+(r.width-img.naturalWidth*scale)/2+x0*scale;
+                    const right=left+(x1-x0+1)*scale;
+                    list.push({src:img.getAttribute('src'),visibleHeight:(y1-y0+1)*scale,left,right,textX:text.x,noOverlap:left>=0&&right<text.x,transform:s.transform});
+                  }
+                  return {width:innerWidth,scrollWidth:document.documentElement.scrollWidth,characters:list,images:[...document.images].every(i=>i.complete&&i.naturalWidth>0),active:document.querySelector('nav [aria-current="page"]')?.textContent};
+                });
+                m.httpOk=response.ok();pages[page]=m;
+              }
+              const m=pages.receiving,c=m.characters;
+              const female=c.find(i=>i.src.endsWith('/character-sales-female.png'));
+              const men=c.filter(i=>!i.src.endsWith('/character-sales-female.png'));
+              m.femaleToMaleRatio=female.visibleHeight/(men.reduce((n,i)=>n+i.visibleHeight,0)/men.length);
+              m.matchesLpo=c.every(i=>Math.abs(i.visibleHeight/pages.lpo.characters.find(j=>j.src===i.src).visibleHeight-1)<.001);
+              m.ok=m.httpOk&&pages.lpo.httpOk&&!errors.length&&m.images&&m.width===m.scrollWidth&&c.length===3&&c.every(i=>i.noOverlap)&&Math.abs(m.femaleToMaleRatio-1)<.01&&m.matchesLpo&&m.active==='Receiving';
+              m.errors=errors;results.push(m);
+              await p.locator('section.black:has(.feature-dept-grid)').screenshot({path:`receiving-review/${live?'live-':''}receiving-${width}.png`});
+              await p.close();
+            }
+            await browser.close();
+            const result={verified:results.every(r=>r.ok),live,commit:process.env.GITHUB_SHA,url:root+'/receiving',screens:results};
+            fs.writeFileSync('receiving-review/verification.json',JSON.stringify(result,null,2));
+            console.log('RECEIVING_SIZE_VERIFIED '+JSON.stringify(result));
+            if(!result.verified)throw new Error('Receiving visible-size review failed');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: receiving-character-review-${{ github.sha }}-${{ github.ref_name }}
+          path: receiving-review/
+          retention-days: 3

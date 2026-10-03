@@ -1,4 +1,23 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Receiving | ScanApp</title><link rel="icon" href="graphics/scanapp%20small%20color.png"><link rel="stylesheet" href="site.css"></head><body><div data-site-header></div>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Receiving | ScanApp</title><link rel="icon" href="graphics/scanapp%20small%20color.png"><link rel="stylesheet" href="site.css">
+<style id="receiving-character-size">
+/* Match the LPO character sizes by visible artwork, not transparent margins. */
+.feature-dept-grid .dept > img[src$="/character-sales-female.png"]{
+  transform:scale(1.266)!important;
+  transform-origin:center top!important;
+}
+@media(min-width:601px) and (max-width:900px){
+  /* Discard the old second-column enlargement so the men match LPO too. */
+  .feature-dept-grid .dept > img[src$="/character-service-male.png"]{
+    transform:none!important;
+  }
+  .feature-dept-grid .dept > img[src$="/character-sales-female.png"]{
+    height:156px!important;
+    max-height:156px!important;
+    object-position:center top!important;
+  }
+}
+</style>
+</head><body><div data-site-header></div>
 
 <section class="hero receiving-hero"><div class="hero-inner"><div><h1>KNOW WHAT'S COMING. <span class="red">CONTROL WHAT YOU RECEIVE.</span></h1><p>ScanApp combines DMS purchase-order data, OEM shipment data and the parts physically received to validate inbound inventory as it arrives.</p><p><strong>Scan. Validate. Resolve. Verify. Every receipt. Every time.</strong></p></div><div class="receiving-hero-art"><img src="graphics/character-parts-female.png" alt="Parts employee receiving inventory"></div></div></section>
 
