@@ -1,0 +1,150 @@
+name: Official S favicon review
+on:
+  push:
+    branches: [favicon-red-s-20261003, main]
+    paths: [.github/workflows/favicon-review.yml, favicon.ico, graphics/S ICON_RED.png]
+permissions:
+  contents: write
+concurrency:
+  group: favicon-review-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare image and browser tools
+        run: |
+          python3 -m pip install --quiet Pillow
+          npm install --no-audit --no-fund --prefix "$RUNNER_TEMP/favicon-review" playwright
+      - name: Prepare official icon and verify transparency without changing page bodies
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageDraw
+          import re, json, hashlib, os, shutil
+          out = Path('icon-review')
+          out.mkdir(exist_ok=True)
+          source = Path('graphics/S ICON_RED.png')
+          original = source.read_bytes()
+          image = Image.open(source).convert('RGBA')
+          alpha = image.getchannel('A')
+          counts = alpha.histogram()
+          assert counts[0] > 0 and counts[255] > 0, 'Official PNG must contain real transparency and visible artwork'
+          live = os.environ['GITHUB_REF'] == 'refs/heads/main'
+          pattern = re.compile(r'<link\b(?=[^>]*\brel=[\"\'](?:shortcut\s+)?icon[\"\'])[^>]*>', re.I)
+          tags = '<link rel="icon" href="/favicon.ico?v=red-s-20261003" sizes="16x16 32x32 48x48 64x64"><link rel="icon" type="image/png" href="/graphics/S%20ICON_RED.png?v=red-s-20261003">'
+          pages = []
+          for path in sorted(Path('.').glob('*.html')):
+              before = path.read_text()
+              old = pattern.findall(before)
+              assert old, f'No icon reference found in {path}'
+              if not live:
+                  after = pattern.sub(lambda m: tags if m.start() == pattern.search(before).start() else '', before)
+                  assert pattern.sub('', before) == pattern.sub('', after), f'Unrelated HTML changed in {path}'
+                  path.write_text(after)
+              else:
+                  after = before
+              assert '/graphics/S%20ICON_RED.png?v=red-s-20261003' in after, f'Official S missing in {path}'
+              assert 'scanapp%20small%20color.png' not in ''.join(pattern.findall(after)), f'Old tab icon remains in {path}'
+              pages.append({'page':path.name, 'previousIcons':old, 'bodyUnchanged':not live or True})
+          if not live:
+              mark = image.crop(alpha.getbbox())
+              mark.thumbnail((60,60), Image.Resampling.LANCZOS)
+              square = Image.new('RGBA',(64,64),(0,0,0,0))
+              square.alpha_composite(mark,((64-mark.width)//2,(64-mark.height)//2))
+              square.save('favicon.ico',format='ICO',sizes=[(16,16),(32,32),(48,48),(64,64)])
+          icon = Image.open('favicon.ico')
+          sizes = sorted(icon.ico.sizes())
+          for size in sizes:
+              frame = icon.ico.getimage(size).convert('RGBA')
+              a = frame.getchannel('A')
+              assert a.getextrema() == (0,255), f'ICO transparency lost at {size}'
+              assert all(frame.getpixel(p)[3] == 0 for p in [(0,0),(size[0]-1,0),(0,size[1]-1),(size[0]-1,size[1]-1)]), f'ICO background not transparent at {size}'
+          assert source.read_bytes() == original, 'Original official artwork was modified'
+          preview = Image.new('RGB',(560,240),'white')
+          draw = ImageDraw.Draw(preview)
+          for y,bg,fg in [(0,'white','black'),(120,'#202124','white')]:
+              draw.rectangle((0,y,559,y+119),fill=bg)
+              draw.text((12,y+8),'Official red S on '+('light' if y == 0 else 'dark')+' background',fill=fg)
+              for x,size in zip([30,150,280,420],[16,32,48,64]):
+                  frame = icon.ico.getimage((size,size)).convert('RGBA')
+                  preview.paste(frame,(x,y+37),frame)
+                  draw.text((x,y+105),str(size)+' px',fill=fg)
+          preview.save(out/'transparency-preview.png')
+          shutil.copy2(source,out/'S ICON_RED.png')
+          shutil.copy2('favicon.ico',out/'favicon.ico')
+          report={'source':str(source),'sourceSha256':hashlib.sha256(original).hexdigest(),'sourceSize':image.size,'transparentPixels':counts[0],'totalPixels':image.width*image.height,'icoSizes':sizes,'pages':pages,'originalUnchanged':True,'live':live}
+          (out/'source-verification.json').write_text(json.dumps(report,indent=2))
+          print(json.dumps(report))
+          PY
+      - name: Verify icon loading on every page
+        env:
+          NODE_PATH: ${{ runner.temp }}/favicon-review/node_modules
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/favicon-server.log 2>&1 &
+          node <<'JS'
+          const fs=require('node:fs'),crypto=require('node:crypto');
+          const {chromium}=require('playwright');
+          const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+          (async()=>{
+            const live=process.env.GITHUB_REF==='refs/heads/main';
+            const root=live?'https://fuckederful.com':'http://127.0.0.1:4173';
+            if(live){
+              let ready=false;
+              for(let n=0;n<18;n++){
+                const r=await fetch(root+'/favicon.ico?v=red-s-20261003');
+                if(r.ok&&hash(Buffer.from(await r.arrayBuffer()))===hash(fs.readFileSync('favicon.ico'))){ready=true;break;}
+                await new Promise(r=>setTimeout(r,5000));
+              }
+              if(!ready)throw new Error('Published favicon not yet verified');
+            }
+            const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/google-chrome',args:['--no-sandbox']});
+            const results=[];
+            for(const width of [1536,390]){
+              const page=await browser.newPage({viewport:{width,height:1000}});
+              for(const name of fs.readdirSync('.').filter(n=>n.endsWith('.html')).sort()){
+                const response=await page.goto(root+'/'+name+'?verify=red-s-20261003',{waitUntil:'networkidle'});
+                const icons=await page.locator('link[rel="icon"]').evaluateAll(es=>es.map(e=>({href:e.href,type:e.type})));
+                const png=icons.find(i=>i.type==='image/png');
+                if(!response.ok()||!png||!png.href.includes('/graphics/S%20ICON_RED.png?v=red-s-20261003'))throw new Error('Wrong icon on '+name);
+                const r=await page.request.get(png.href);
+                if(!r.ok()||hash(await r.body())!==hash(fs.readFileSync('graphics/S ICON_RED.png')))throw new Error('PNG is not the official source on '+name);
+                const image=await page.evaluate(async url=>{const im=new Image();im.src=url;await im.decode();const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const ctx=c.getContext('2d');ctx.drawImage(im,0,0);const d=ctx.getImageData(0,0,c.width,c.height).data;let clear=0;for(let i=3;i<d.length;i+=4)if(d[i]===0)clear++;return {width:c.width,height:c.height,transparentPixels:clear};},png.href);
+                if(!image.transparentPixels)throw new Error('Browser PNG is opaque');
+                const logo=await page.locator('[data-site-header] .brand img').getAttribute('src');
+                if(logo!=='graphics/SCANAPP_COLOR.png')throw new Error('Shared header changed');
+                results.push({page:name,width,ok:true,icon:png.href,...image});
+              }
+              await page.close();
+            }
+            await browser.close();
+            const report={verified:true,live,commit:process.env.GITHUB_SHA,root,pages:results};
+            fs.writeFileSync('icon-review/browser-verification.json',JSON.stringify(report,null,2));
+            console.log('FAVICON_VERIFIED '+JSON.stringify(report));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+      - name: Save tested changes to development branch only
+        if: github.ref == 'refs/heads/favicon-red-s-20261003'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- '*.html' favicon.ico
+          if ! git diff --cached --quiet; then
+            git commit -m 'Use official transparent red S for browser icons across all pages'
+            git push origin HEAD:refs/heads/favicon-red-s-20261003
+          fi
+          git rev-parse HEAD > icon-review/reviewed-commit.txt
+          git diff HEAD^ HEAD --stat > icon-review/changed-files.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: favicon-review-${{ github.sha }}-${{ github.ref_name }}
+          path: icon-review/
+          retention-days: 3
