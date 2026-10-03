@@ -107,3 +107,10 @@
  .hero:has(.lpo-hero-art) .lpo-hero-art{min-height:0!important;align-self:end}
  .hero:has(.lpo-hero-art) .lpo-people{align-items:flex-end}
 }
+
+
+/* Hero character sizing: one equal-size character on LPO and Receiving */
+.lpo-hero-art .lpo-people{padding-right:38%!important;justify-content:center!important}
+.lpo-hero-art .lpo-people img,.receiving-hero-art img{width:auto!important;height:360px!important;max-width:100%!important;max-height:360px!important;object-fit:contain!important;object-position:bottom center}
+@media(max-width:900px){.lpo-hero-art .lpo-people img,.receiving-hero-art img{height:320px!important;max-height:320px!important}}
+@media(max-width:600px){.lpo-hero-art .lpo-people{padding-right:25%!important}.lpo-hero-art .lpo-people img,.receiving-hero-art img{height:270px!important;max-height:270px!important;width:auto!important}}
