@@ -244,3 +244,9 @@
 .results-control-list strong{color:#fff}.results-control-list strong::first-letter{color:var(--red)}
 @media(max-width:900px){.results-stats{grid-template-columns:1fr}.result-card{border-right:0;border-bottom:1px solid var(--line)}.downstream-grid{grid-template-columns:1fr}.downstream-grid b{transform:rotate(90deg)}.results-accountant{min-height:280px}.results-not-scanner .split{grid-template-columns:1fr}.not-scanner-mark{width:230px;height:230px}.no-slash{width:240px}.scanner-symbol{font-size:130px}}
 @media(max-width:600px){.results-thought{position:relative;right:auto;top:auto;margin-bottom:24px;font-size:16px}.results-accountant{display:block;min-height:0}.results-calculator{max-width:220px;margin:auto}.results-page h2,.results-flow h2,.results-bottom-line h2,.results-equation h2,.results-not-scanner h2,.results-close h2{font-size:32px}.result-card{padding:26px 0}.results-control-list{font-size:22px}}
+
+/* Shared Login CTA */
+nav>a.login-btn{background:var(--red);color:#fff;padding:10px 18px;margin-left:14px;border:0;text-decoration:none;font-weight:800;line-height:1;border-radius:2px}
+nav>a.login-btn:hover{background:#b91219}
+nav>a.login-btn:focus-visible{outline:3px solid #111;outline-offset:3px}
+@media(max-width:800px){nav>a.login-btn{margin:10px 0 0;padding:13px 16px;text-align:center;border-top:0}}
