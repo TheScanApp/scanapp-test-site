@@ -18,7 +18,11 @@ const expectedMenu = ['Receiving','Invoicing','LPO Management','FAQ','How-Tos'];
           const r = await fetch(`${root}/${name}?verify=${process.env.GITHUB_SHA}`, {signal:AbortSignal.timeout(10000)});
           return r.ok && hash(Buffer.from(await r.arrayBuffer())) === hash(fs.readFileSync(name));
         }));
-        if (checks.every(Boolean)) {matched=true;break;}
+        // Wait for the HTML deletion too; unchanged CSS/JS alone cannot identify this release.
+        const htmlResponse = await fetch(`${root}/faq.html?verify=${process.env.GITHUB_SHA}`, {signal:AbortSignal.timeout(10000)});
+        const html = await htmlResponse.text();
+        const htmlReady = htmlResponse.ok && html.includes('id="faq-heading"') && !html.includes('faq-guides') && !html.includes('View How-Tos');
+        if (checks.every(Boolean) && htmlReady) {matched=true;break;}
       } catch (_) {}
       await new Promise(r=>setTimeout(r,5000));
     }
@@ -43,11 +47,12 @@ const expectedMenu = ['Receiving','Invoicing','LPO Management','FAQ','How-Tos'];
       headerLogo:document.querySelector('.brand img')?.getAttribute('src'),
       footerText:document.querySelector('footer')?.innerText.replace(/\s+/g,' ').trim(),
       images:[...document.images].every(i=>i.complete&&i.naturalWidth>0),
-      guides:document.querySelector('.faq-guides a')?.getAttribute('href')
+      bottomGuides:document.querySelectorAll('main .faq-guides, main a[href*="howtos"]').length
     }));
     assert(r.ok()&&!errors.length&&m.width===m.scrollWidth&&m.images&&m.headings===1&&m.questions===8,`FAQ render failed at ${width}`);
     assert(JSON.stringify(m.menu)===JSON.stringify(expectedMenu)&&!m.top.includes('How-Tos')&&m.active==='FAQ'&&m.featureActive&&m.underline==='rgb(215, 25, 32)',`Navigation failed at ${width}`);
-    assert(m.headerColor==='rgb(255, 255, 255)'&&m.headerLogo==='graphics/SCANAPP_COLOR.png'&&m.guides==='howtos.html','Shared branding or guide link changed');
+    assert(m.headerColor==='rgb(255, 255, 255)'&&m.headerLogo==='graphics/SCANAPP_COLOR.png','Shared branding changed');
+    assert(m.bottomGuides===0,'The removed bottom How-Tos block must not return');
     // Native details must work with keyboard and pointer, and expanded answers must fit.
     const second=page.locator('.faq-item').nth(1);
     await second.locator('summary').focus();await page.keyboard.press('Enter');
