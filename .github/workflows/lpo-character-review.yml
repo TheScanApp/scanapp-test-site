@@ -1,10 +1,13 @@
 name: LPO character size review
 on:
   push:
-    branches: [lpo-character-size-20261003]
+    branches: [lpo-character-size-20261003, main]
     paths: [lpo.html, .github/workflows/lpo-character-review.yml]
 permissions:
   contents: read
+concurrency:
+  group: lpo-character-review-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   review:
     runs-on: ubuntu-latest
@@ -14,13 +17,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Prepare browser and export review sources
-        run: |
-          npm install --no-audit --no-fund --prefix "$RUNNER_TEMP/lpo-review" playwright
-          mkdir -p lpo-review/source/graphics
-          cp lpo.html site.css site.js lpo-review/source/
-          cp graphics/character-*.png 'graphics/SCANAPP_COLOR.png' 'graphics/POWER SYSTEMS LOGO_WHITE.png' lpo-review/source/graphics/
-      - name: Measure actual artwork and render the dealership section
+      - name: Prepare browser
+        run: npm install --no-audit --no-fund --prefix "$RUNNER_TEMP/lpo-review" playwright
+      - name: Verify visible character size and render desktop/mobile
         env:
           NODE_PATH: ${{ runner.temp }}/lpo-review/node_modules
         run: |
@@ -29,12 +28,27 @@ jobs:
           const fs=require('node:fs');
           const {chromium}=require('playwright');
           (async()=>{
+            const live=process.env.GITHUB_REF==='refs/heads/main';
+            const root=live?'https://fuckederful.com':'http://127.0.0.1:4173';
+            if(live){
+              let ready=false;
+              for(let n=0;n<18;n++){
+                try{
+                  const r=await fetch(root+'/lpo.html?verify='+process.env.GITHUB_SHA,{signal:AbortSignal.timeout(10000)});
+                  const html=await r.text();
+                  if(r.ok&&html.includes('id="lpo-character-size"')&&html.includes('scale(1.266)')){ready=true;break;}
+                }catch(_){}
+                await new Promise(r=>setTimeout(r,5000));
+              }
+              if(!ready)throw new Error('Updated LPO HTML is not live');
+            }
             const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/google-chrome',args:['--no-sandbox']});
-            const results=[];
-            for(const width of [1536,1024,800,390,320]){
+            const results=[];fs.mkdirSync('lpo-review',{recursive:true});
+            for(const width of [1536,1024,800,600,430,390,360,320]){
               const p=await browser.newPage({viewport:{width,height:1000}});
-              await p.goto('http://127.0.0.1:4173/lpo.html',{waitUntil:'networkidle'});
-              const measurements=await p.evaluate(async()=>{
+              const errors=[];p.on('pageerror',e=>errors.push(e.message));
+              const response=await p.goto(root+'/lpo.html?verify='+process.env.GITHUB_SHA,{waitUntil:'networkidle'});
+              const m=await p.evaluate(async()=>{
                 const list=[];
                 for(const img of document.querySelectorAll('.feature-dept-grid .dept>img')){
                   await img.decode();
@@ -43,24 +57,32 @@ jobs:
                   const d=ctx.getImageData(0,0,canvas.width,canvas.height).data;
                   let x0=canvas.width,y0=canvas.height,x1=0,y1=0;
                   for(let y=0;y<canvas.height;y++)for(let x=0;x<canvas.width;x++)if(d[(y*canvas.width+x)*4+3]>10){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);}
-                  const r=img.getBoundingClientRect(),s=getComputedStyle(img);
+                  const r=img.getBoundingClientRect(),s=getComputedStyle(img),text=img.nextElementSibling.getBoundingClientRect();
                   const scale=Math.min(r.width/img.naturalWidth,r.height/img.naturalHeight);
-                  list.push({src:img.getAttribute('src'),natural:[img.naturalWidth,img.naturalHeight],bounds:[x0,y0,x1+1,y1+1],box:[r.width,r.height],visibleHeight:(y1-y0+1)*scale,transform:s.transform});
+                  const left=r.x+(r.width-img.naturalWidth*scale)/2+x0*scale;
+                  const right=left+(x1-x0+1)*scale;
+                  list.push({src:img.getAttribute('src'),visibleHeight:(y1-y0+1)*scale,left,right,textX:text.x,noOverlap:left>=0&&right<text.x,transform:s.transform});
                 }
-                return {width:innerWidth,scrollWidth:document.documentElement.scrollWidth,characters:list};
+                return {width:innerWidth,scrollWidth:document.documentElement.scrollWidth,characters:list,active:document.querySelector('nav [aria-current="page"]')?.textContent};
               });
-              results.push(measurements);
-              await p.locator('section.black:has(.feature-dept-grid)').screenshot({path:`lpo-review/lpo-${width}.png`});
+              const c=m.characters;
+              const averageMaleHeight=(c[0].visibleHeight+c[2].visibleHeight)/2;
+              m.femaleToMaleRatio=c[1].visibleHeight/averageMaleHeight;
+              m.ok=response.ok()&&!errors.length&&m.width===m.scrollWidth&&c.every(i=>i.noOverlap)&&Math.abs(m.femaleToMaleRatio-1)<.01&&m.active==='LPO Management';
+              m.errors=errors;results.push(m);
+              await p.locator('section.black:has(.feature-dept-grid)').screenshot({path:`lpo-review/${live?'live-':''}lpo-${width}.png`});
               await p.close();
             }
             await browser.close();
-            fs.writeFileSync('lpo-review/measurements.json',JSON.stringify(results,null,2));
-            console.log('CHARACTER_MEASUREMENTS '+JSON.stringify(results));
+            const result={verified:results.every(r=>r.ok),live,commit:process.env.GITHUB_SHA,url:root+'/lpo',screens:results};
+            fs.writeFileSync('lpo-review/verification.json',JSON.stringify(result,null,2));
+            console.log('LPO_SIZE_VERIFIED '+JSON.stringify(result));
+            if(!result.verified)throw new Error('LPO visible-size review failed');
           })().catch(e=>{console.error(e);process.exit(1)});
           JS
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: lpo-character-review-${{ github.sha }}
+          name: lpo-character-review-${{ github.sha }}-${{ github.ref_name }}
           path: lpo-review/
           retention-days: 3
