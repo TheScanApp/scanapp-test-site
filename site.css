@@ -133,3 +133,31 @@
    align-items:center!important;
  }
 }
+
+
+/* Match dealership-benefit black bands and align all three columns */
+@media(min-width:901px){
+ section.black:has(.dept-grid){
+   min-height:360px!important;
+   display:flex!important;
+   align-items:center!important;
+ }
+ section.black:has(.dept-grid)>.wrap{
+   width:100%;
+   padding-top:44px!important;
+   padding-bottom:44px!important;
+ }
+ .dept-grid,.receiving-depts{
+   align-items:start!important;
+ }
+ .dept-grid .dept,.receiving-depts .dept{
+   align-items:start!important;
+ }
+ .dept-grid .dept img,.dept-grid .dept:nth-child(2) img,
+ .receiving-depts .dept img,.receiving-depts .dept:nth-child(2) img{
+   align-self:start!important;
+ }
+ .dept-grid .dept h3,.receiving-depts .dept h3{
+   margin-top:0!important;
+ }
+}
