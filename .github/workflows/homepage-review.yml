@@ -77,7 +77,15 @@ jobs:
               await page.evaluate(async () => { await document.fonts.ready; await Promise.all([...document.images].map(i=>i.decode())); });
               const m = await page.evaluate(expected => {
                 const rect = e => { const r=e.getBoundingClientRect(); return {x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height}; };
-                const normalize = s => s.replace(/>\s+</g,'><').replace(/\s+/g,' ').trim();
+                // Netlify rewrites internal .html anchors to root-relative clean URLs.
+                // Normalize those equivalent URLs, but retain and compare every element,
+                // other attribute, image source, and text node in the main page content.
+                const canonical = href => { const u=new URL(href,location.href); if(u.origin===location.origin)u.pathname=u.pathname.replace(/\.html$/i,'').replace(/\/index$/i,'/'); return u.href; };
+                const normalize = html => {
+                  const doc=new DOMParser().parseFromString(html,'text/html');
+                  doc.querySelectorAll('a[href]').forEach(a=>a.setAttribute('href',canonical(a.getAttribute('href'))));
+                  return doc.body.innerHTML.replace(/>\s+</g,'><').replace(/\s+/g,' ').trim();
+                };
                 const expectedDoc=new DOMParser().parseFromString(expected,'text/html');
                 const copy = rect(document.querySelector('.sa-home-copy'));
                 const visual = rect(document.querySelector('.sa-home-visual'));
@@ -96,8 +104,8 @@ jobs:
                   noHeroCompatibility:!(/\bLPO\b|\bDMS\b/.test(text)),
                   scannerLogo:scanner.getAttribute('src')==='graphics/S%20ICON_RED.png' && styles.display!=='none' && styles.visibility!=='hidden' && Number(styles.opacity)>0 && mark.width>20 && mark.x>scene.x && mark.right<scene.right && mark.y>scene.y && mark.bottom<scene.bottom,
                   noOverlap:innerWidth>800 ? copy.right<=visual.x+1 : copy.bottom<=visual.y+1,
-                  featuresLink:document.querySelector('.sa-home-cta').getAttribute('href')==='features.html',
-                  dmsLink:!!document.querySelector('a[href="features.html#supported-dms"]'),
+                  featuresLink:canonical(document.querySelector('.sa-home-cta').getAttribute('href'))===canonical('features.html'),
+                  dmsLink:[...document.querySelectorAll('.feature-links a[href]')].some(a=>canonical(a.getAttribute('href'))===canonical('features.html#supported-dms')),
                   overflowing:[...document.querySelectorAll('header,header img,header nav,.sa-home-grid,.sa-home-copy,.sa-home-visual,.feature-links,.footer')].map(e=>({element:e.className||e.tagName,...rect(e)})).filter(r=>r.right>innerWidth+1||r.x< -1)
                 };
               },expectedHome);
@@ -108,11 +116,14 @@ jobs:
               await page.close();
             }
             const page=await browser.newPage({viewport:{width:390,height:1000}});
-            await page.goto(`${root}/features.html?verify=${process.env.GITHUB_SHA}#supported-dms`,{waitUntil:'networkidle'});
+            await page.goto(`${root}/?verify=${process.env.GITHUB_SHA}`,{waitUntil:'networkidle'});
+            await page.locator('.feature-links a').filter({hasText:'Supported DMSs'}).click();
+            await page.waitForURL('**/features#supported-dms');
             const features=await page.evaluate(expected=>{
-              const normalize=s=>s.replace(/>\s+</g,'><').replace(/\s+/g,' ').trim();
+              const canonical=href=>{const u=new URL(href,location.href);if(u.origin===location.origin)u.pathname=u.pathname.replace(/\.html$/i,'').replace(/\/index$/i,'/');return u.href;};
+              const normalize=html=>{const doc=new DOMParser().parseFromString(html,'text/html');doc.querySelectorAll('a[href]').forEach(a=>a.setAttribute('href',canonical(a.getAttribute('href'))));return doc.body.innerHTML.replace(/>\s+</g,'><').replace(/\s+/g,' ').trim();};
               const expectedDoc=new DOMParser().parseFromString(expected,'text/html');
-              return {mainMatchesRepository:normalize(document.querySelector('main').outerHTML)===normalize(expectedDoc.querySelector('main').outerHTML),title:document.querySelector('#supported-dms h2')?.innerText,headings:[...document.querySelectorAll('.sa-dms-grid h3')].map(e=>e.innerText),width:innerWidth,scrollWidth:document.documentElement.scrollWidth};
+              return {url:location.href,mainMatchesRepository:normalize(document.querySelector('main').outerHTML)===normalize(expectedDoc.querySelector('main').outerHTML),title:document.querySelector('#supported-dms h2')?.innerText,headings:[...document.querySelectorAll('.sa-dms-grid h3')].map(e=>e.innerText),width:innerWidth,scrollWidth:document.documentElement.scrollWidth};
             },fs.readFileSync('features.html','utf8'));
             await page.screenshot({path:'review-results/features-390.png',fullPage:true});
             await browser.close();
