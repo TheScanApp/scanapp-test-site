@@ -11,7 +11,7 @@
 .hero .hero-inner>div:first-child{min-width:0}
 @media(min-width:901px){.hero .hero-inner{grid-template-columns:minmax(430px,1fr) minmax(430px,1fr)!important}.hero h1{font-size:52px!important;max-width:620px}.hero p{max-width:620px}}
 @media(max-width:900px){.lpo-hero-art{min-height:360px}.lpo-people{padding-right:20%}.hero-lpo-box{width:36%!important}}
-@media(max-width:600px){.lpo-hero-art{min-height:300px}.lpo-people{padding-right:15%}.lpo-people img{width:48%!important}.hero-lpo-box{width:34%!important}.hero h1{font-size:38px!important}}
+@media(max-width:600px){.lpo-hero-art{min-height:300px}.lpo-people{padding-right:15%}.lpo-people img{width:48%!important;max-width:245px!important}.hero-lpo-box{width:34%!important}.hero h1{font-size:38px!important}}
 
 /* Approved LPO polish */
 .hero h1{white-space:nowrap;font-size:clamp(34px,3.3vw,54px)!important}
@@ -39,3 +39,12 @@
 @media(min-width:801px){.contact-page{grid-template-columns:48% 52%}.contact-scene{min-height:760px}}
 @media(max-width:800px){.contact-scene{min-height:520px}.contact-scene img{object-position:70% center}.contact-copy{order:1}.contact-scene{order:2}}
 @media(max-width:520px){.contact-scene{min-height:430px}.contact-scene img{object-position:71% center}}
+
+/* Current-page underline: shared desktop, dropdown and mobile navigation. */
+[data-site-header] nav a.is-active {
+  text-decoration-line: underline;
+  text-decoration-color: var(--red);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 7px;
+  text-decoration-skip-ink: none;
+}
