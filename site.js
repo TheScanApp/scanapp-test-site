@@ -4,3 +4,31 @@ document.querySelectorAll('[data-site-header]').forEach(el=>el.innerHTML=headerH
 document.querySelectorAll('[data-site-footer]').forEach(el=>el.innerHTML=footerHTML);
 const btn=document.querySelector('.menu'); if(btn) btn.addEventListener('click',()=>{const nav=document.querySelector('nav');nav.classList.toggle('open');btn.setAttribute('aria-expanded',nav.classList.contains('open'));});
 const ep=['info','powersystemsinc.ca'];document.querySelectorAll('[data-email]').forEach(el=>{const a=document.createElement('a');a.href='mail'+'to:'+ep[0]+'@'+ep[1];a.textContent=ep[0]+'@'+ep[1];el.replaceWith(a);});
+
+// Match both .html pages and Netlify clean URLs; the root is the About page.
+function updateActiveNavigation(pathname) {
+  const pageKey = path => path.replace(/\/+$/, '').split('/').pop().replace(/\.html$/i, '').toLowerCase() || 'index';
+  const links = Array.from(document.querySelectorAll('[data-site-header] nav a[href]'));
+  const currentPage = pageKey(pathname);
+
+  links.forEach(link => {
+    link.classList.remove('is-active');
+    link.removeAttribute('aria-current');
+  });
+
+  const currentLink = links.find(link =>
+    pageKey(new URL(link.getAttribute('href'), document.baseURI).pathname) === currentPage
+  );
+  if (!currentLink) return;
+
+  currentLink.classList.add('is-active');
+  currentLink.setAttribute('aria-current', 'page');
+
+  // Feature detail pages also underline Features, without marking it as the page.
+  const dropdown = currentLink.closest('.dropmenu');
+  if (dropdown) {
+    const sectionLink = dropdown.parentElement.querySelector(':scope > a');
+    if (sectionLink) sectionLink.classList.add('is-active');
+  }
+}
+updateActiveNavigation(window.location.pathname);
