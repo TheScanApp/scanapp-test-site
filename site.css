@@ -79,3 +79,13 @@
 .receiving-hero-art img{display:block;max-height:440px;max-width:100%;width:auto;object-fit:contain;object-position:bottom center}
 @media(max-width:900px){.receiving-hero-art img{max-height:360px}}
 @media(max-width:600px){.receiving-hero-art{margin-top:24px}.receiving-hero-art img{max-height:300px}}
+
+
+/* Receiving dealership row: compact, aligned, equal character scale */
+.receiving-depts{grid-template-columns:repeat(3,1fr);gap:24px;align-items:start}
+.receiving-depts .dept{display:grid;grid-template-columns:88px 1fr;gap:16px;align-items:start}
+.receiving-depts .dept img,.receiving-depts .dept:nth-child(2) img{width:88px;height:112px;max-height:none;object-fit:contain;object-position:top center;transform:none}
+.receiving-depts .dept h3{margin:0 0 8px;font-size:24px;line-height:1.1}
+.receiving-depts .dept p{margin:0}
+@media(max-width:900px){.receiving-depts{grid-template-columns:1fr}.receiving-depts .dept{grid-template-columns:88px 1fr}}
+@media(max-width:600px){.receiving-depts .dept{grid-template-columns:76px 1fr}.receiving-depts .dept img,.receiving-depts .dept:nth-child(2) img{width:76px;height:98px}}
