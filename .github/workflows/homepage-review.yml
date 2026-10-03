@@ -39,31 +39,46 @@ jobs:
           const digest = b => crypto.createHash('sha256').update(b).digest('hex');
           const assert = (ok, message) => { if (!ok) throw new Error(message); };
           (async () => {
-            const targets = ['index.html','features.html','home.css','graphics/home/hero-scene-980.avif','graphics/S ICON_RED.png','graphics/S ICON_WHITE.png','graphics/SCANAPP_COLOR.png','graphics/SCANAPP_RED&WHITE.png'];
             const assets = [];
+            for (const path of ['index.html','features.html']) {
+              const r = await fetch(`${root}/${path}?verify=${process.env.GITHUB_SHA}`, {signal:AbortSignal.timeout(15000)});
+              const actual = await r.text();
+              const expected = fs.readFileSync(path,'utf8');
+              let first = 0; while(first < expected.length && expected[first] === actual[first]) first++;
+              console.log('HTML_DIAGNOSTIC '+JSON.stringify({path,status:r.status,url:r.url,exact:actual===expected,expectedLength:expected.length,actualLength:actual.length,firstDifference:first,expectedExcerpt:expected.slice(Math.max(0,first-120),first+300),actualExcerpt:actual.slice(Math.max(0,first-120),first+600),tail:actual.slice(-1200)}));
+              fs.writeFileSync(`review-results/live-${path}`,actual);
+              assert(r.ok,`Live HTML not available: ${path}`);
+            }
+            const targets = ['home.css','graphics/home/hero-scene-980.avif','graphics/S ICON_RED.png','graphics/S ICON_WHITE.png','graphics/SCANAPP_COLOR.png','graphics/SCANAPP_RED&WHITE.png'];
             for (const path of targets) {
               const expected = digest(fs.readFileSync(path));
-              let matched = false;
+              let matched = false, status = null, actual = null;
               for (let attempt = 0; attempt < 18; attempt++) {
                 try {
                   const r = await fetch(`${root}/${encodeURI(path).replace(/&/g,'%26')}?verify=${process.env.GITHUB_SHA}`, { signal: AbortSignal.timeout(10000) });
-                  if (r.ok && digest(Buffer.from(await r.arrayBuffer())) === expected) { matched = true; break; }
-                } catch (_) {}
+                  status = r.status; actual = digest(Buffer.from(await r.arrayBuffer()));
+                  if (r.ok && actual === expected) { matched = true; break; }
+                } catch (e) { console.log('ASSET_RETRY '+path+' '+e.message); }
                 await new Promise(r => setTimeout(r, 5000));
               }
-              assets.push({path,matched,sha256:expected});
+              const item={path,matched,status,sha256:expected,actual}; assets.push(item);
+              console.log('ASSET_VERIFIED '+JSON.stringify(item));
+              fs.writeFileSync('review-results/assets.json',JSON.stringify(assets,null,2));
               assert(matched, `Published asset does not match repository: ${path}`);
             }
             const browser = await chromium.launch({headless:true, executablePath:process.env.CHROME_BIN || undefined, args:['--no-sandbox']});
             const results = [];
+            const expectedHome=fs.readFileSync('index.html','utf8');
             for (const width of [320,390,430,768,900,1024,1440,1920]) {
               const page = await browser.newPage({viewport:{width,height:1000},deviceScaleFactor:1});
               const errors = [];
               page.on('pageerror', e => errors.push(e.message));
               const response = await page.goto(`${root}/?verify=${process.env.GITHUB_SHA}`, {waitUntil:'networkidle',timeout:45000});
               await page.evaluate(async () => { await document.fonts.ready; await Promise.all([...document.images].map(i=>i.decode())); });
-              const m = await page.evaluate(() => {
+              const m = await page.evaluate(expected => {
                 const rect = e => { const r=e.getBoundingClientRect(); return {x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height}; };
+                const normalize = s => s.replace(/>\s+</g,'><').replace(/\s+/g,' ').trim();
+                const expectedDoc=new DOMParser().parseFromString(expected,'text/html');
                 const copy = rect(document.querySelector('.sa-home-copy'));
                 const visual = rect(document.querySelector('.sa-home-visual'));
                 const scene = rect(document.querySelector('.sa-home-scene'));
@@ -73,6 +88,8 @@ jobs:
                 const text = document.querySelector('.sa-home-hero').innerText;
                 return {
                   width:innerWidth,scrollWidth:document.documentElement.scrollWidth,
+                  mainMatchesRepository:normalize(document.querySelector('main').outerHTML)===normalize(expectedDoc.querySelector('main').outerHTML),
+                  stylesheetMatches:document.querySelector('link[href^="home.css"]')?.getAttribute('href')===expectedDoc.querySelector('link[href^="home.css"]').getAttribute('href'),
                   images:[...document.images].every(i=>i.complete && i.naturalWidth>0),
                   h1Count:document.querySelectorAll('h1').length,
                   active:document.querySelector('nav [aria-current="page"]')?.textContent,
@@ -80,20 +97,26 @@ jobs:
                   scannerLogo:scanner.getAttribute('src')==='graphics/S%20ICON_RED.png' && styles.display!=='none' && styles.visibility!=='hidden' && Number(styles.opacity)>0 && mark.width>20 && mark.x>scene.x && mark.right<scene.right && mark.y>scene.y && mark.bottom<scene.bottom,
                   noOverlap:innerWidth>800 ? copy.right<=visual.x+1 : copy.bottom<=visual.y+1,
                   featuresLink:document.querySelector('.sa-home-cta').getAttribute('href')==='features.html',
-                  dmsLink:!!document.querySelector('a[href="features.html#supported-dms"]')
+                  dmsLink:!!document.querySelector('a[href="features.html#supported-dms"]'),
+                  overflowing:[...document.querySelectorAll('header,header img,header nav,.sa-home-grid,.sa-home-copy,.sa-home-visual,.feature-links,.footer')].map(e=>({element:e.className||e.tagName,...rect(e)})).filter(r=>r.right>innerWidth+1||r.x< -1)
                 };
-              });
-              m.ok=response.ok()&&!errors.length&&m.width===m.scrollWidth&&m.images&&m.h1Count===1&&m.active==='About'&&m.noHeroCompatibility&&m.scannerLogo&&m.noOverlap&&m.featuresLink&&m.dmsLink;
+              },expectedHome);
+              m.ok=response.ok()&&!errors.length&&m.width===m.scrollWidth&&m.mainMatchesRepository&&m.stylesheetMatches&&m.images&&m.h1Count===1&&m.active==='About'&&m.noHeroCompatibility&&m.scannerLogo&&m.noOverlap&&m.featuresLink&&m.dmsLink;
               await page.screenshot({path:`review-results/home-${width}.png`,fullPage:true});
+              console.log('VIEWPORT_REVIEW '+JSON.stringify({...m,errors}));
               results.push({...m,errors});
               await page.close();
             }
             const page=await browser.newPage({viewport:{width:390,height:1000}});
             await page.goto(`${root}/features.html?verify=${process.env.GITHUB_SHA}#supported-dms`,{waitUntil:'networkidle'});
-            const features=await page.evaluate(()=>({title:document.querySelector('#supported-dms h2')?.innerText,headings:[...document.querySelectorAll('.sa-dms-grid h3')].map(e=>e.innerText),width:innerWidth,scrollWidth:document.documentElement.scrollWidth}));
+            const features=await page.evaluate(expected=>{
+              const normalize=s=>s.replace(/>\s+</g,'><').replace(/\s+/g,' ').trim();
+              const expectedDoc=new DOMParser().parseFromString(expected,'text/html');
+              return {mainMatchesRepository:normalize(document.querySelector('main').outerHTML)===normalize(expectedDoc.querySelector('main').outerHTML),title:document.querySelector('#supported-dms h2')?.innerText,headings:[...document.querySelectorAll('.sa-dms-grid h3')].map(e=>e.innerText),width:innerWidth,scrollWidth:document.documentElement.scrollWidth};
+            },fs.readFileSync('features.html','utf8'));
             await page.screenshot({path:'review-results/features-390.png',fullPage:true});
             await browser.close();
-            const verified=results.every(r=>r.ok)&&features.title==='Supported DMSs'&&features.headings.join('|')==='Quorum|PBS|Reynolds & Reynolds'&&features.width===features.scrollWidth;
+            const verified=results.every(r=>r.ok)&&features.mainMatchesRepository&&features.title==='Supported DMSs'&&features.headings.join('|')==='Quorum|PBS|Reynolds & Reynolds'&&features.width===features.scrollWidth;
             const result={verified,url:root,commit:process.env.GITHUB_SHA,checkedAt:new Date().toISOString(),assets,screens:results,features};
             fs.writeFileSync('review-results/live-verification.json',JSON.stringify(result,null,2));
             console.log('LIVE_HOME_VERIFIED '+JSON.stringify(result));
