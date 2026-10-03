@@ -1,0 +1,62 @@
+name: Contact page visual review
+on:
+  push:
+    branches: [contact-layered-review-20261003]
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare browser
+        run: |
+          npm install --no-audit --no-fund --prefix "$RUNNER_TEMP/scanapp-review" playwright
+          if command -v google-chrome >/dev/null; then
+            echo "CHROME_BIN=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          else
+            "$RUNNER_TEMP/scanapp-review/node_modules/.bin/playwright" install --with-deps chromium
+          fi
+      - name: Render and test actual repository assets
+        env:
+          NODE_PATH: ${{ runner.temp }}/scanapp-review/node_modules
+        run: |
+          mkdir -p review-results/logos review-results/source
+          cp 'graphics/SCANAPP_COLOR.png' 'graphics/SCANAPP_RED&WHITE.png' 'graphics/S ICON_WHITE.png' 'graphics/POWER SYSTEMS LOGO_WHITE.png' review-results/logos/
+          cp site.css site.js contact.html contact.css contact.js review-results/source/
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/scanapp-server.log 2>&1 &
+          node <<'JS'
+          const {chromium}=require('playwright');
+          const fs=require('node:fs');
+          (async()=>{
+            const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_BIN||undefined,args:['--no-sandbox']});
+            const results=[];let failed=false;
+            for(const width of [1536,1440,1024,800,600,430,390,360,320]){
+              const page=await browser.newPage({viewport:{width,height:1100},deviceScaleFactor:1});
+              const errors=[];page.on('pageerror',e=>errors.push(e.message));
+              await page.goto('http://127.0.0.1:4173/contact.html',{waitUntil:'networkidle'});
+              await page.evaluate(()=>document.fonts.ready);
+              await page.screenshot({path:`review-results/contact-${width}.png`,fullPage:true});
+              const measurements=await page.evaluate(()=>({viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth,headingCount:document.querySelectorAll('h1').length,active:Array.from(document.querySelectorAll('nav a[aria-current="page"]')).map(a=>a.textContent),images:Array.from(document.images).every(a=>a.complete&&a.naturalWidth>0),buttons:Array.from(document.querySelectorAll('.contact-cta')).map(a=>({width:a.getBoundingClientRect().width,height:a.getBoundingClientRect().height,right:a.getBoundingClientRect().right,href:a.href})),mobileArtClear:innerWidth>800||document.querySelector('.contact-information').getBoundingClientRect().bottom<=document.querySelector('.contact-illustration').getBoundingClientRect().top}));
+              const ok=!errors.length&&measurements.scrollWidth===width&&measurements.headingCount===1&&measurements.images&&measurements.active.join()==='Contact'&&measurements.mobileArtClear&&measurements.buttons[0].width===measurements.buttons[1].width&&measurements.buttons[0].height===measurements.buttons[1].height&&measurements.buttons.every(a=>a.right<=width);
+              if(!ok)failed=true;
+              results.push({width,ok,errors,...measurements});
+              if(width<=800){await page.locator('.menu').click();if(width===390)await page.screenshot({path:'review-results/contact-mobile-menu.png',fullPage:false});await page.keyboard.press('Escape');if(await page.locator('.menu').getAttribute('aria-expanded')!=='false')failed=true;}
+              await page.close();
+            }
+            await browser.close();
+            fs.writeFileSync('review-results/test-results.json',JSON.stringify(results,null,2));
+            console.log(JSON.stringify(results,null,2));
+            if(failed)process.exit(1);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: contact-review-${{ github.sha }}
+          path: review-results/
+          retention-days: 3
