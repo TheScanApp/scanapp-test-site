@@ -21,7 +21,9 @@
 .sa-home-scene .sa-brand-layer{position:absolute;display:block;height:auto;z-index:2;pointer-events:none}
 /* Percentages are relative to the fixed-ratio artwork, never to the viewport.
    These layers reference the original official files already in /graphics. */
-.sa-box-wordmark{left:10.9%;top:63.8%;width:29.2%;transform:rotate(3deg)}
+/* Center the unaltered wordmark within the white label, above the barcode.
+   Match the label's sloping baseline without rotating its vertical edges. */
+.sa-box-wordmark{left:13.2%;top:65.7%;width:29.4%;transform-origin:top left;transform:skewY(3deg);mix-blend-mode:multiply}
 .sa-shirt-mark{left:42.2%;top:44.0%;width:4.8%;transform:rotate(9deg) skewX(-7deg)}
 .sa-scanner-mark{left:76.7%;top:56.0%;width:9.6%;transform:rotate(-10deg) skewX(5deg)}
 .sa-home-main{max-width:1320px}
@@ -30,7 +32,7 @@
 .sa-home-main .feature-links a:hover{background:#ededed}
 .sa-home-main .feature-links h3{font-size:24px;line-height:1.15}
 .sa-home-main .feature-links p{margin-bottom:0}
-.sa-home-eyebrow{font-size:13px;font-weight:800;letter-spacing:.12em;color:#bd111a;margin:0 0 16px;text-transform:uppercase}
+.sa-home-eyebrow{font-size:clamp(26px,4.2vw,50px);font-weight:900;line-height:1.1;letter-spacing:-.035em;color:#bd111a;margin:0 0 24px;text-transform:none}
 .sa-home-main h2{max-width:850px}
 .sa-home-founder{padding-top:12px;padding-bottom:56px}
 .sa-home-founder a{color:#bb1119;font-weight:700}
