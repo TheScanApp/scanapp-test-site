@@ -76,8 +76,9 @@ async function sharedSnapshot(page, open = false) {
         clickable:actions.every(a=>{const r=rect(a);return document.elementFromPoint(r.x+r.width/2,Math.min(r.y+r.height/2,innerHeight-1))?.closest('a')===a||r.y>=innerHeight;}),
         personIcon:!!document.querySelector('.contact-person .contact-symbol svg'),
         founder:title?.textContent,founderPlaced:!!titleRect&&titleRect.y>=nameRect.bottom&&titleRect.bottom<buttons[0].y&&titleRect.right<=innerWidth,
-        portraitRaised:innerWidth>800||portrait.y<buttons[0].y,
-        faceClear:innerWidth>800||buttons.every(b=>b.right<=portrait.x+portrait.width*360/1122+3),
+        // Keep both actions fully above the portrait, not over the raised thumb.
+        buttonsClearOfPortrait:innerWidth>800||buttons.every(b=>b.bottom+11.9<=portrait.y),
+        mobileActionRow:innerWidth>800||(Math.abs(buttons[0].y-buttons[1].y)<1&&buttons[0].right+11.9<=buttons[1].x),
         raisedCounter:counter.y>portrait.y+portrait.height*.5&&counter.y<portrait.bottom&&counter.bottom>=portrait.bottom,
         removedCopy:!bodyText.includes('We’re here to help.')&&!bodyText.includes('Same Parts.')&&!bodyText.includes('A Smarter Way.'),
         noPropLogos:document.querySelectorAll('.contact-wall-brand,.contact-wall-words,.contact-props image[href*="SCANAPP"]').length===0,
@@ -86,7 +87,7 @@ async function sharedSnapshot(page, open = false) {
         headerLogo:document.querySelector('[data-site-header] .brand img')?.getAttribute('src')
       };
     });
-    m.ok=response.ok()&&!errors.length&&m.width===m.scrollWidth&&m.images&&m.headingCount===1&&m.active==='Contact'&&m.labelsFit&&m.clickable&&m.personIcon&&m.founderPlaced&&m.founder==='Founder, ScanApp / Power Systems Inc.'&&m.portraitRaised&&m.faceClear&&m.raisedCounter&&m.removedCopy&&m.noPropLogos&&m.details[2]==='Ottawa, Ontario Canada'&&m.details[3]==='Dave Power Founder, ScanApp / Power Systems Inc.'&&m.buttons[0].text==='Request a Demo'&&m.buttons[1].text==='in LinkedIn'&&m.buttons[0].width===m.buttons[1].width&&m.buttons[0].height===m.buttons[1].height&&m.phone==='tel:+16132823283'&&m.email==='mailto:info@powersystemsinc.ca'&&m.buttons[0].href==='mailto:info@powersystemsinc.ca?subject=ScanApp%20Demo%20Request'&&m.buttons[1].href==='https://www.linkedin.com/in/thedavepower/'&&m.headerBackground==='rgb(255, 255, 255)'&&m.headerLogo==='graphics/SCANAPP_COLOR.png';
+    m.ok=response.ok()&&!errors.length&&m.width===m.scrollWidth&&m.images&&m.headingCount===1&&m.active==='Contact'&&m.labelsFit&&m.clickable&&m.personIcon&&m.founderPlaced&&m.founder==='Founder, ScanApp / Power Systems Inc.'&&m.buttonsClearOfPortrait&&m.mobileActionRow&&m.raisedCounter&&m.removedCopy&&m.noPropLogos&&m.details[2]==='Ottawa, Ontario Canada'&&m.details[3]==='Dave Power Founder, ScanApp / Power Systems Inc.'&&m.buttons[0].text==='Request a Demo'&&m.buttons[1].text==='in LinkedIn'&&m.buttons[0].width===m.buttons[1].width&&m.buttons[0].height===m.buttons[1].height&&m.phone==='tel:+16132823283'&&m.email==='mailto:info@powersystemsinc.ca'&&m.buttons[0].href==='mailto:info@powersystemsinc.ca?subject=ScanApp%20Demo%20Request'&&m.buttons[1].href==='https://www.linkedin.com/in/thedavepower/'&&m.headerBackground==='rgb(255, 255, 255)'&&m.headerLogo==='graphics/SCANAPP_COLOR.png';
     const expectedClosed=await sharedSnapshot(page);
     let expectedOpen=null;
     if(width<=800){
