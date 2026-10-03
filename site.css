@@ -64,3 +64,11 @@
 .receiving-dms p{margin:0 0 18px}
 @media(max-width:900px){.receiving-process{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.receiving-process{grid-template-columns:1fr}.receiving-process .process-item{display:block}.receiving-callout-title,.receiving-callout-accent{font-size:26px}}
+
+
+/* Receiving hero: keep headline inside its column */
+.hero .hero-inner > div:first-child{min-width:0}
+.hero .hero-inner > div:first-child h1{white-space:normal!important;overflow-wrap:normal;word-break:normal}
+@media(min-width:901px){
+  .hero .hero-inner > div:first-child h1{font-size:clamp(38px,3vw,50px)!important}
+}
