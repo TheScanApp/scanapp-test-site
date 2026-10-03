@@ -1,0 +1,81 @@
+name: LPO mobile package review
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [lpo.html, site.css, .github/workflows/lpo-mobile-review.yml]
+permissions:
+  contents: read
+concurrency:
+  group: lpo-mobile-review-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare local browser
+        run: |
+          npm install --no-audit --no-fund --prefix "$RUNNER_TEMP/lpo-review" playwright
+          if command -v google-chrome >/dev/null; then
+            echo "CHROME_BIN=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          else
+            "$RUNNER_TEMP/lpo-review/node_modules/.bin/playwright" install --with-deps chromium
+          fi
+      - name: Compare mobile and desktop using repository files
+        env:
+          NODE_PATH: ${{ runner.temp }}/lpo-review/node_modules
+        run: |
+          mkdir -p review-results
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/lpo-review-server.log 2>&1 &
+          node <<'NODE'
+          const fs=require('node:fs');
+          const crypto=require('node:crypto');
+          const {chromium}=require('playwright');
+          const digest=b=>crypto.createHash('sha256').update(b).digest('hex');
+          (async()=>{
+            const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_BIN||undefined,args:['--no-sandbox']});
+            const results=[];
+            for(const width of [320,360,390,430,600,768,1024,1440]){
+              const page=await browser.newPage({viewport:{width,height:1000},deviceScaleFactor:1});
+              await page.route('**/*',route=>new URL(route.request().url()).hostname==='127.0.0.1'?route.continue():route.abort());
+              const errors=[];
+              page.on('pageerror',e=>errors.push(e.message));
+              await page.goto('http://127.0.0.1:4173/lpo.html',{waitUntil:'networkidle'});
+              await page.evaluate(async()=>{await document.fonts.ready;await Promise.all([...document.images].map(i=>i.decode()));});
+              const css=await page.locator('#lpo-mobile-package-size').textContent();
+              await page.locator('#lpo-mobile-package-size').evaluate(e=>e.remove());
+              const measure=()=>page.evaluate(()=>{
+                const rect=e=>{const r=e.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height,right:r.right,bottom:r.bottom};};
+                return{width:innerWidth,scrollWidth:document.documentElement.scrollWidth,box:rect(document.querySelector('.hero-lpo-box')),art:rect(document.querySelector('.lpo-hero-art')),character:rect(document.querySelector('.lpo-people img')),images:[...document.images].every(i=>i.complete&&i.naturalWidth>0)};
+              });
+              const before=await measure();
+              const beforePng=await page.locator('.hero').screenshot({path:`review-results/before-${width}.png`});
+              await page.addStyleTag({content:css});
+              const after=await measure();
+              const afterPng=await page.locator('.hero').screenshot({path:`review-results/after-${width}.png`});
+              if(width===390||width===1440)await page.screenshot({path:`review-results/lpo-${width}.png`,fullPage:true});
+              const unchangedCharacter=JSON.stringify(before.character)===JSON.stringify(after.character);
+              const desktopUnchanged=width<=600||digest(beforePng)===digest(afterPng);
+              const larger=width>600||after.box.width>=before.box.width*2;
+              const contained=after.box.x>=after.art.x-1&&after.box.right<=after.art.right+1&&after.box.y>=after.art.y-1&&after.box.bottom<=after.art.bottom+1;
+              const ok=!errors.length&&after.images&&after.scrollWidth===after.width&&unchangedCharacter&&desktopUnchanged&&larger&&contained;
+              const result={width,before,after,unchangedCharacter,desktopUnchanged,larger,contained,ok,errors};results.push(result);console.log('LPO_REVIEW '+JSON.stringify(result));
+              await page.close();
+            }
+            await browser.close();
+            const result={verified:results.every(r=>r.ok),scope:'Local repository rendering; not a live-site check',commit:process.env.GITHUB_SHA,results};
+            fs.writeFileSync('review-results/verification.json',JSON.stringify(result,null,2));
+            if(!result.verified)process.exitCode=1;
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lpo-mobile-review-${{ github.sha }}
+          path: review-results/
+          retention-days: 3
