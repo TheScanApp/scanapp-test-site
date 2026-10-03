@@ -161,3 +161,20 @@
    margin-top:0!important;
  }
 }
+
+
+/* Match the main black feature-detail bands on Receiving and LPO */
+@media(min-width:901px){
+ section.black:has(.receiving-callout),
+ section.black:has(.solution-list):has(.visual-pair){
+   min-height:680px!important;
+   display:flex!important;
+   align-items:center!important;
+ }
+ section.black:has(.receiving-callout)>.wrap,
+ section.black:has(.solution-list):has(.visual-pair)>.wrap{
+   width:100%;
+   padding-top:50px!important;
+   padding-bottom:50px!important;
+ }
+}
