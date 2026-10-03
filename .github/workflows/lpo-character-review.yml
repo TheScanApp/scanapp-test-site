@@ -1,0 +1,66 @@
+name: LPO character size review
+on:
+  push:
+    branches: [lpo-character-size-20261003]
+    paths: [lpo.html, .github/workflows/lpo-character-review.yml]
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare browser and export review sources
+        run: |
+          npm install --no-audit --no-fund --prefix "$RUNNER_TEMP/lpo-review" playwright
+          mkdir -p lpo-review/source/graphics
+          cp lpo.html site.css site.js lpo-review/source/
+          cp graphics/character-*.png 'graphics/SCANAPP_COLOR.png' 'graphics/POWER SYSTEMS LOGO_WHITE.png' lpo-review/source/graphics/
+      - name: Measure actual artwork and render the dealership section
+        env:
+          NODE_PATH: ${{ runner.temp }}/lpo-review/node_modules
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/lpo-review-server.log 2>&1 &
+          node <<'JS'
+          const fs=require('node:fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/google-chrome',args:['--no-sandbox']});
+            const results=[];
+            for(const width of [1536,1024,800,390,320]){
+              const p=await browser.newPage({viewport:{width,height:1000}});
+              await p.goto('http://127.0.0.1:4173/lpo.html',{waitUntil:'networkidle'});
+              const measurements=await p.evaluate(async()=>{
+                const list=[];
+                for(const img of document.querySelectorAll('.feature-dept-grid .dept>img')){
+                  await img.decode();
+                  const canvas=document.createElement('canvas');canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
+                  const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0);
+                  const d=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+                  let x0=canvas.width,y0=canvas.height,x1=0,y1=0;
+                  for(let y=0;y<canvas.height;y++)for(let x=0;x<canvas.width;x++)if(d[(y*canvas.width+x)*4+3]>10){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);}
+                  const r=img.getBoundingClientRect(),s=getComputedStyle(img);
+                  const scale=Math.min(r.width/img.naturalWidth,r.height/img.naturalHeight);
+                  list.push({src:img.getAttribute('src'),natural:[img.naturalWidth,img.naturalHeight],bounds:[x0,y0,x1+1,y1+1],box:[r.width,r.height],visibleHeight:(y1-y0+1)*scale,transform:s.transform});
+                }
+                return {width:innerWidth,scrollWidth:document.documentElement.scrollWidth,characters:list};
+              });
+              results.push(measurements);
+              await p.locator('section.black:has(.feature-dept-grid)').screenshot({path:`lpo-review/lpo-${width}.png`});
+              await p.close();
+            }
+            await browser.close();
+            fs.writeFileSync('lpo-review/measurements.json',JSON.stringify(results,null,2));
+            console.log('CHARACTER_MEASUREMENTS '+JSON.stringify(results));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lpo-character-review-${{ github.sha }}
+          path: lpo-review/
+          retention-days: 3
