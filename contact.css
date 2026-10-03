@@ -49,7 +49,7 @@
 .contact-motto i,.contact-wall-words i{display:block;height:5px;background:var(--contact-red);border-radius:65% 85% 0 100%;transform:rotate(-7deg);width:88%;margin:15px 0 0 9%;}
 .contact-wall-brand{position:absolute;z-index:-3;top:2.6%;left:43%;width:25.5%;padding:12px 8px;text-align:center;transform:rotate(7deg);}
 .contact-wall-brand img{width:100%;height:auto;display:block;}
-.contact-wall-brand span{color:#111;font-size:clamp(14px,1.3vw,23px);font-weight:800;display:block;white-space:nowrap;}
+.contact-wall-brand span{display:none;}
 .contact-wall-words{position:absolute;z-index:-3;top:3.2%;right:6%;color:#101010;font-family:'Kalam','Comic Sans MS','Comic Neue',cursive;font-style:italic;font-weight:800;line-height:1.04;font-size:clamp(28px,3.1vw,52px);transform:rotate(-9deg);}
 .contact-wall-words i{margin-top:10px;height:5px;}
 .contact-illustration{display:contents;}
@@ -57,7 +57,7 @@
 .contact-portrait svg{display:block;width:100%;height:auto;}
 .contact-desktop{position:absolute;z-index:1;bottom:0;right:0;left:24%;height:20.5%;border-top:5px solid #5b2d16;background:repeating-linear-gradient(2deg,transparent 0 8px,#50271624 9px,transparent 11px 26px),linear-gradient(180deg,#b67b50,#aa683d 24%,#ca9261 55%,#885334);box-shadow:0 -5px 14px #0003;}
 .contact-desktop:after{content:'';position:absolute;inset:-7px 0 0 0;background:linear-gradient(90deg,#0b0b0c,transparent 22%);}
-.contact-props{position:absolute;z-index:2;right:-6%;bottom:1%;width:70%;}
+.contact-props{position:absolute;z-index:2;right:0;bottom:1%;width:64%;}
 .contact-props>svg{display:block;width:100%;height:auto;overflow:visible;}
 .contact-prop-writing{font-family:'Kalam','Comic Sans MS','Comic Neue',cursive;font-size:40px;font-weight:700;font-style:italic;fill:#111;}
 .contact-note-writing{font-family:'Kalam','Comic Sans MS','Comic Neue',cursive;font-weight:700;font-style:italic;font-size:27px;fill:#111;}
@@ -80,7 +80,7 @@
  .contact-portrait{width:66%;right:-4%;bottom:16%;aspect-ratio:1.1;}
  .contact-wall-brand{left:47%;top:6%;width:26%;}
  .contact-wall-words{right:3%;top:5%;font-size:29px;}
- .contact-props{width:80%;right:-9%;}
+ .contact-props{width:58%;right:0;}
  .contact-desktop{left:28%;height:21%;}
 }
 @media(max-width:800px){

@@ -1,9 +1,13 @@
 name: Contact page visual review
 on:
   push:
-    branches: [contact-layered-review-20261003]
+    branches: [contact-layered-review-20261003, main]
+    paths: [contact.html, contact.css, contact.js, .github/workflows/contact-review.yml]
 permissions:
   contents: read
+concurrency:
+  group: contact-review-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   review:
     runs-on: ubuntu-latest
@@ -43,27 +47,54 @@ jobs:
               const ok=!errors.length&&m.scrollWidth===width&&m.headingCount===1&&m.images&&m.active.join()==='Contact'&&m.mobileArtClear&&m.buttons[0].width===m.buttons[1].width&&m.buttons[0].height===m.buttons[1].height&&m.buttons.every(a=>a.right<=width);
               if(!ok)failed=true;
               results.push({width,ok,errors,...m});
-              if(width===390){
-                const assets=await page.evaluate(async()=>{
-                  const out=[];
-                  for(const [name,width] of [['SCANAPP_COLOR.png',300],['SCANAPP_RED&WHITE.png',300],['S ICON_WHITE.png',64],['POWER SYSTEMS LOGO_WHITE.png',240]]){
-                    const image=new Image();image.src='graphics/'+encodeURIComponent(name);await image.decode();
-                    const c=document.createElement('canvas');c.width=width;c.height=Math.round(width*image.naturalHeight/image.naturalWidth);c.getContext('2d').drawImage(image,0,0,c.width,c.height);
-                    out.push({name,width:c.width,height:c.height,data:c.toDataURL('image/webp',.92).split(',')[1]});
-                  }
-                  return out;
-                });
-                for(const a of assets)console.log('REVIEW_ASSET '+JSON.stringify(a));
-              }
               if(width<=800){await page.locator('.menu').click();if(width===390)await page.screenshot({path:'review-results/contact-mobile-menu.png'});await page.keyboard.press('Escape');if(await page.locator('.menu').getAttribute('aria-expanded')!=='false')failed=true;}
               await page.close();
             }
             await browser.close();fs.writeFileSync('review-results/test-results.json',JSON.stringify(results,null,2));console.log('REVIEW_RESULTS '+JSON.stringify(results));if(failed)process.exit(1);
           })().catch(e=>{console.error(e);process.exit(1)});
           JS
+      - name: Verify published test site
+        if: github.ref == 'refs/heads/main'
+        env:
+          NODE_PATH: ${{ runner.temp }}/scanapp-review/node_modules
+        run: |
+          node <<'JS'
+          const fs=require('node:fs');
+          const crypto=require('node:crypto');
+          const {chromium}=require('playwright');
+          const hash=x=>crypto.createHash('sha256').update(x).digest('hex');
+          (async()=>{
+            const root='https://fuckederful.com';
+            const expected=hash(fs.readFileSync('contact.css'));
+            let matched=false,last='';
+            for(let attempt=1;attempt<=18;attempt++){
+              try{
+                const r=await fetch(root+'/contact.css?verify='+process.env.GITHUB_SHA,{signal:AbortSignal.timeout(10000)});
+                const css=Buffer.from(await r.arrayBuffer());
+                if(r.ok&&hash(css)===expected){matched=true;break;}
+                last='HTTP '+r.status+'; published CSS not current';
+              }catch(e){last=e.message;}
+              if(attempt<18)await new Promise(r=>setTimeout(r,5000));
+            }
+            if(!matched)throw new Error('Live deployment not verified: '+last);
+            const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_BIN||undefined,args:['--no-sandbox']});
+            const live=[];
+            for(const width of [1536,390]){
+              const p=await browser.newPage({viewport:{width,height:1100},deviceScaleFactor:1});
+              const errors=[];p.on('pageerror',e=>errors.push(e.message));
+              const response=await p.goto(root+'/contact.html?verify='+process.env.GITHUB_SHA,{waitUntil:'networkidle',timeout:45000});
+              await p.evaluate(()=>document.fonts.ready);
+              const m=await p.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,stage:!!document.querySelector('.contact-stage'),images:[...document.images].every(i=>i.complete&&i.naturalWidth>0),active:document.querySelector('nav [aria-current="page"]')?.textContent,demo:document.querySelector('[data-demo-link]')?.href,phone:document.querySelector('.contact-phone')?.href,linkedin:document.querySelector('.contact-linkedin')?.href}));
+              if(!response.ok()||errors.length||!m.stage||!m.images||m.width!==m.scrollWidth||m.active!=='Contact')throw new Error(JSON.stringify({m,errors}));
+              await p.screenshot({path:`review-results/live-contact-${width}.png`,fullPage:true});live.push(m);await p.close();
+            }
+            await browser.close();const result={verified:true,commit:process.env.GITHUB_SHA,url:root+'/contact',cssSha256:expected,checkedAt:new Date().toISOString(),screens:live};
+            fs.writeFileSync('review-results/live-verification.json',JSON.stringify(result,null,2));console.log('LIVE_VERIFIED '+JSON.stringify(result));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: contact-review-${{ github.sha }}
+          name: contact-review-${{ github.sha }}-${{ github.ref_name }}
           path: review-results/
           retention-days: 3
