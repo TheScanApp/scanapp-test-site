@@ -25,9 +25,7 @@ jobs:
         env:
           NODE_PATH: ${{ runner.temp }}/scanapp-review/node_modules
         run: |
-          mkdir -p review-results/logos review-results/source
-          cp 'graphics/SCANAPP_COLOR.png' 'graphics/SCANAPP_RED&WHITE.png' 'graphics/S ICON_WHITE.png' 'graphics/POWER SYSTEMS LOGO_WHITE.png' review-results/logos/
-          cp site.css site.js contact.html contact.css contact.js review-results/source/
+          mkdir -p review-results
           python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/scanapp-server.log 2>&1 &
           node <<'JS'
           const {chromium}=require('playwright');
@@ -41,17 +39,26 @@ jobs:
               await page.goto('http://127.0.0.1:4173/contact.html',{waitUntil:'networkidle'});
               await page.evaluate(()=>document.fonts.ready);
               await page.screenshot({path:`review-results/contact-${width}.png`,fullPage:true});
-              const measurements=await page.evaluate(()=>({viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth,headingCount:document.querySelectorAll('h1').length,active:Array.from(document.querySelectorAll('nav a[aria-current="page"]')).map(a=>a.textContent),images:Array.from(document.images).every(a=>a.complete&&a.naturalWidth>0),buttons:Array.from(document.querySelectorAll('.contact-cta')).map(a=>({width:a.getBoundingClientRect().width,height:a.getBoundingClientRect().height,right:a.getBoundingClientRect().right,href:a.href})),mobileArtClear:innerWidth>800||document.querySelector('.contact-information').getBoundingClientRect().bottom<=document.querySelector('.contact-illustration').getBoundingClientRect().top}));
-              const ok=!errors.length&&measurements.scrollWidth===width&&measurements.headingCount===1&&measurements.images&&measurements.active.join()==='Contact'&&measurements.mobileArtClear&&measurements.buttons[0].width===measurements.buttons[1].width&&measurements.buttons[0].height===measurements.buttons[1].height&&measurements.buttons.every(a=>a.right<=width);
+              const m=await page.evaluate(()=>({viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth,headingCount:document.querySelectorAll('h1').length,active:Array.from(document.querySelectorAll('nav a[aria-current="page"]')).map(a=>a.textContent),images:Array.from(document.images).every(a=>a.complete&&a.naturalWidth>0),buttons:Array.from(document.querySelectorAll('.contact-cta')).map(a=>({width:a.getBoundingClientRect().width,height:a.getBoundingClientRect().height,right:a.getBoundingClientRect().right,href:a.href})),mobileArtClear:innerWidth>800||document.querySelector('.contact-information').getBoundingClientRect().bottom<=document.querySelector('.contact-illustration').getBoundingClientRect().top}));
+              const ok=!errors.length&&m.scrollWidth===width&&m.headingCount===1&&m.images&&m.active.join()==='Contact'&&m.mobileArtClear&&m.buttons[0].width===m.buttons[1].width&&m.buttons[0].height===m.buttons[1].height&&m.buttons.every(a=>a.right<=width);
               if(!ok)failed=true;
-              results.push({width,ok,errors,...measurements});
-              if(width<=800){await page.locator('.menu').click();if(width===390)await page.screenshot({path:'review-results/contact-mobile-menu.png',fullPage:false});await page.keyboard.press('Escape');if(await page.locator('.menu').getAttribute('aria-expanded')!=='false')failed=true;}
+              results.push({width,ok,errors,...m});
+              if(width===390){
+                const assets=await page.evaluate(async()=>{
+                  const out=[];
+                  for(const [name,width] of [['SCANAPP_COLOR.png',300],['SCANAPP_RED&WHITE.png',300],['S ICON_WHITE.png',64],['POWER SYSTEMS LOGO_WHITE.png',240]]){
+                    const image=new Image();image.src='graphics/'+encodeURIComponent(name);await image.decode();
+                    const c=document.createElement('canvas');c.width=width;c.height=Math.round(width*image.naturalHeight/image.naturalWidth);c.getContext('2d').drawImage(image,0,0,c.width,c.height);
+                    out.push({name,width:c.width,height:c.height,data:c.toDataURL('image/webp',.92).split(',')[1]});
+                  }
+                  return out;
+                });
+                for(const a of assets)console.log('REVIEW_ASSET '+JSON.stringify(a));
+              }
+              if(width<=800){await page.locator('.menu').click();if(width===390)await page.screenshot({path:'review-results/contact-mobile-menu.png'});await page.keyboard.press('Escape');if(await page.locator('.menu').getAttribute('aria-expanded')!=='false')failed=true;}
               await page.close();
             }
-            await browser.close();
-            fs.writeFileSync('review-results/test-results.json',JSON.stringify(results,null,2));
-            console.log(JSON.stringify(results,null,2));
-            if(failed)process.exit(1);
+            await browser.close();fs.writeFileSync('review-results/test-results.json',JSON.stringify(results,null,2));console.log('REVIEW_RESULTS '+JSON.stringify(results));if(failed)process.exit(1);
           })().catch(e=>{console.error(e);process.exit(1)});
           JS
       - uses: actions/upload-artifact@v4
