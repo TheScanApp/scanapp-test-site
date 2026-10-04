@@ -1,0 +1,15 @@
+# Preserve legacy thescanapp.com URLs after the 2026 site migration
+/features/        /features.html        301
+/features         /features.html        301
+/how-it-works/    /features.html        301
+/how-it-works     /features.html        301
+/faq/             /howtos.html         301
+/faq              /howtos.html         301
+
+# Canonicalize common clean paths
+/receiving/       /receiving.html       301
+/invoicing/       /invoicing.html       301
+/lpo/             /lpo.html             301
+/results/         /results.html         301
+/contact/         /contact.html         301
+/howtos/          /howtos.html          301
