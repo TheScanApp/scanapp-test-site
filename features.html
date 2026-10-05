@@ -23,27 +23,77 @@
   <link rel="icon" href="/favicon.ico?v=red-s-20261003" sizes="16x16 32x32 48x48 64x64"><link rel="icon" type="image/png" href="/graphics/S%20ICON_RED.png?v=red-s-20261003">
   <link rel="stylesheet" href="site.css">
   <link rel="stylesheet" href="home.css?v=20261003-2">
+<style>
+/* Features page only: follow the established Receiving and Invoicing style. */
+.features-page .features-hero{min-height:500px;padding-block:42px;display:flex;align-items:center}
+.features-page .features-hero .hero-inner{width:100%;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)!important;gap:48px}
+.features-page .hero h1{font-size:clamp(38px,3.4vw,50px)!important;max-width:610px}
+.features-page .hero h1 span{display:block;margin-top:6px}
+.features-page .features-eyebrow{font-size:14px;color:#ccc;text-transform:uppercase;font-weight:700;letter-spacing:.12em;margin:0 0 18px}
+.features-page .hero .lead{color:#e7e7e7;font-size:20px}
+.features-page .features-hero-art{display:flex;align-items:center;justify-content:center}
+.features-page .features-hero-art img{display:block;width:auto;max-width:100%;height:360px;object-fit:contain}
+.features-page .features-dms-link{display:inline-flex;align-items:center;gap:14px;color:#fff;font-weight:700;font-size:16px;margin-top:10px;text-underline-offset:6px}
+.features-page .features-dms-link span{color:var(--red);font-size:22px;text-decoration:none}
+.features-page .wrap h2{margin:0;letter-spacing:-.02em}
+.features-page .features-workflows>.lead{margin:16px 0 0}
+.features-page .features-workflow-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin-top:32px}
+.features-page .features-workflow-card{display:flex;flex-direction:column;background:var(--soft);border-top:5px solid var(--red);padding:26px;color:var(--ink);text-decoration:none;min-width:0}
+.features-page .features-workflow-art{height:210px;display:flex;align-items:center;justify-content:center;margin-bottom:24px}
+.features-page .features-workflow-art img{height:100%;width:100%;object-fit:contain;display:block}
+.features-page .features-workflow-card h3{font-size:27px;line-height:1.15;margin:0 0 12px}
+.features-page .features-workflow-card p{margin:0 0 22px;font-size:18px;line-height:1.5}
+.features-page .features-card-link{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #ddd;padding-top:16px;margin-top:auto;font-size:15px;font-weight:700;color:#b91219}
+.features-page .features-card-link span{font-size:24px;line-height:1}
+.features-page .features-workflow-card:hover{background:#ededed}
+.features-page .features-dms{scroll-margin-top:110px}
+.features-page .features-dms .lead{margin:16px 0 28px}
+.features-page .features-dms-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}
+.features-page .features-dms-grid article{border-top:4px solid var(--red);padding:22px 0 0}
+.features-page .features-dms-grid h3{font-size:26px;line-height:1.2;margin:0 0 14px}
+.features-page .features-dms-grid p{margin:0;color:#e7e7e7;font-size:18px}
+.features-page .features-dms-contact{margin:32px 0 0;font-size:17px;color:#ddd}
+.features-page .features-dms-contact a{color:#fff;font-weight:700;text-underline-offset:5px}
+.features-page .features-close .split{grid-template-columns:1.2fr 1fr;gap:48px}
+.features-page .features-close .lead{margin:18px 0}
+.features-page .features-close-art{display:flex;align-items:center;justify-content:center;gap:24px}
+.features-page .features-close-art img{height:110px;width:110px;object-fit:contain;max-width:30%}
+.features-page .seo-resource-links{padding-top:36px;border-top:1px solid #ddd}
+.features-page .seo-resource-links .feature-links{margin-top:28px}
+.features-page a:focus-visible{outline:3px solid var(--red);outline-offset:5px}
+.features-page .black a:focus-visible{outline-color:#fff}
+@media(max-width:1050px){.features-page .features-workflow-grid{gap:20px}.features-page .features-workflow-card{padding:22px}.features-page .features-workflow-card h3{font-size:25px}.features-page .features-workflow-art{height:185px}}
+@media(max-width:900px){.features-page .features-hero .hero-inner{grid-template-columns:1fr!important;gap:28px}.features-page .features-hero{min-height:0}.features-page .features-hero-art img{height:320px}.features-page .features-dms-grid{gap:24px}.features-page .features-dms-grid h3{font-size:23px}.features-page .features-close .split{grid-template-columns:1fr;gap:28px}.features-page .features-close-art{justify-content:flex-start}}
+@media(max-width:700px){.features-page .features-workflow-grid,.features-page .features-dms-grid{grid-template-columns:1fr;gap:24px}.features-page .features-workflow-card{display:grid;grid-template-columns:110px minmax(0,1fr);gap:16px 22px}.features-page .features-workflow-art{grid-row:1/4;height:160px;margin:0}.features-page .features-workflow-card h3,.features-page .features-workflow-card p,.features-page .features-card-link{grid-column:2;margin:0}.features-page .features-card-link{padding-top:12px}.features-page .features-workflow-card p{font-size:17px}.features-page .features-dms-grid article{padding-top:18px}}
+@media(max-width:600px){.features-page .features-hero{padding-block:34px}.features-page .hero h1{font-size:36px!important}.features-page .hero .lead{font-size:18px}.features-page .features-hero-art img{height:270px}.features-page .wrap h2{font-size:30px}.features-page .features-workflow-card{grid-template-columns:90px minmax(0,1fr);gap:14px 18px;padding:22px 18px}.features-page .features-workflow-art{height:145px}.features-page .features-workflow-card h3{font-size:24px}.features-page .features-card-link{font-size:14px}.features-page .features-close-art{gap:18px}.features-page .features-close-art img{width:85px;height:85px}.features-page .features-dms{scroll-margin-top:80px}}
+@media(max-width:360px){.features-page .features-workflow-card{grid-template-columns:1fr}.features-page .features-workflow-art{grid-row:auto;height:170px}.features-page .features-workflow-card h3,.features-page .features-workflow-card p,.features-page .features-card-link{grid-column:1}}
+</style>
 </head>
-<body>
+<body class="features-page">
 <div data-site-header></div>
-<main class="wrap sa-home-main">
-  <h1>ScanApp Features</h1>
-  <p class="lead">Three core workflows give dealership Parts departments better control over incoming inventory.  Explore the workflows and supported DMSs below.</p>
-  <div class="feature-links">
-    <a href="receiving.html"><h3>Receiving</h3><p>Barcode-driven receiving and reconciliation.</p></a>
-    <a href="invoicing.html"><h3>Invoicing</h3><p>Invoice visibility and reconciliation.</p></a>
-    <a href="lpo.html"><h3>LPO Management</h3><p>Dedicated GM LPO tracking outside operational DMS inventory.</p></a>
-    <a href="#supported-dms"><h3>Supported DMSs</h3><p>Current DMS compatibility and integration capabilities.</p></a>
-  </div>
-  <section id="supported-dms" class="sa-dms-section" aria-labelledby="sa-dms-title">
-    <h2 id="sa-dms-title">Supported DMSs</h2>
-    <div class="sa-dms-grid">
-      <article><h3>Quorum</h3><p>Fully bi-directional data flow.</p></article>
-      <article><h3>PBS</h3><p>Supported by ScanApp.</p></article>
-      <article><h3>Reynolds &amp; Reynolds</h3><p>Supported by ScanApp.</p></article>
-    </div>
-    <p>Using another DMS?  <a href="contact.html">Contact us to discuss compatibility.</a></p>
-  </section>
+<main>
+<section class="hero features-hero"><div class="hero-inner">
+<div><p class="features-eyebrow">ScanApp Features</p><h1>THREE CORE WORKFLOWS.<span class="red">CONTROL YOUR PARTS.</span></h1>
+<p class="lead">Three core workflows give dealership Parts departments better control over incoming inventory. Explore the workflows and supported DMSs below.</p>
+<a class="features-dms-link" href="#supported-dms">Supported DMSs <span aria-hidden="true">↓</span></a></div>
+<div class="features-hero-art"><img src="graphics/character-parts-male.png" alt="ScanApp Parts team member" fetchpriority="high"></div>
+</div></section>
+<section class="wrap features-workflows"><h2>Explore the ScanApp workflows</h2>
+<div class="features-workflow-grid">
+<a class="features-workflow-card" href="receiving.html"><div class="features-workflow-art"><img src="graphics/character-parts-female.png" alt="" loading="lazy" decoding="async"></div><h3>Receiving</h3><p>Barcode-driven receiving and reconciliation.</p><div class="features-card-link">Explore Receiving <span aria-hidden="true">→</span></div></a>
+<a class="features-workflow-card" href="invoicing.html"><div class="features-workflow-art"><img src="graphics/character-sales-female.png" alt="" loading="lazy" decoding="async"></div><h3>Invoicing</h3><p>Invoice visibility and reconciliation.</p><div class="features-card-link">Explore Invoicing <span aria-hidden="true">→</span></div></a>
+<a class="features-workflow-card" href="lpo.html"><div class="features-workflow-art"><img src="graphics/lpo-box.png" alt="" loading="lazy" decoding="async"></div><h3>LPO Management</h3><p>Dedicated GM LPO tracking outside operational DMS inventory.</p><div class="features-card-link">Explore LPO Management <span aria-hidden="true">→</span></div></a>
+</div></section>
+<section id="supported-dms" class="black features-dms" aria-labelledby="sa-dms-title"><div class="wrap">
+<h2 id="sa-dms-title">Supported DMSs</h2><p class="lead">Current DMS compatibility and integration capabilities.</p>
+<div class="features-dms-grid">
+<article><h3>Quorum</h3><p>Fully bi-directional data flow.</p></article>
+<article><h3>PBS</h3><p>Supported by ScanApp.</p></article>
+<article><h3>Reynolds &amp; Reynolds</h3><p>Supported by ScanApp.</p></article>
+</div><p class="features-dms-contact">Using another DMS? <a href="contact.html">Contact us to discuss compatibility.</a></p>
+</div></section>
+<section class="wrap features-close"><div class="split"><div><h2>See ScanApp in action.</h2><p class="lead">Explore receiving, invoice reconciliation and GM LPO management for your dealership.</p><a class="btn action-btn" href="contact.html"><img src="graphics/S%20ICON_WHITE.png" alt="">SEE IT IN ACTION</a></div>
+<div class="features-close-art" aria-hidden="true"><img src="graphics/icon-inventory.png" alt="" loading="lazy" decoding="async"><img src="graphics/icon-accountability.png" alt="" loading="lazy" decoding="async"><img src="graphics/icon-save-time.png" alt="" loading="lazy" decoding="async"></div></div></section>
 </main>
 <section class="wrap seo-resource-links"><h2>Learn more about dealership parts control</h2><div class="feature-links"><a href="dealership-parts-receiving-software.html"><h3>Dealership Parts Receiving</h3><p>Why receiving is reconciliation—not simply barcode scanning.</p></a><a href="dealership-parts-invoice-reconciliation.html"><h3>Invoice Reconciliation</h3><p>Connect OEM invoices to shipment and physical receipt activity.</p></a><a href="gm-lpo-tracking.html"><h3>GM LPO Tracking</h3><p>Track GM LPOs by VIN from shipment through receipt and issue.</p></a></div></section><div data-site-footer></div>
 <script src="site.js"></script>
