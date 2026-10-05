@@ -23,33 +23,87 @@
 <link rel="icon" href="/favicon.ico?v=red-s-20261003" sizes="16x16 32x32 48x48 64x64"><link rel="icon" type="image/png" href="/graphics/S%20ICON_RED.png?v=red-s-20261003">
 <link rel="stylesheet" href="site.css">
 <style>
-.invoicing-hero .hero-inner{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)!important}
-.invoice-overview{border-left:5px solid var(--red);padding:24px 28px;background:#171717}
-.invoice-overview h2{font-size:28px;line-height:1.15;margin:0 0 20px}
-.invoice-statuses{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.invoice-statuses div{border-top:1px solid #555;padding-top:12px}
-.invoice-statuses strong{display:block;font-size:24px}
-.invoice-overview p{font-size:17px;margin-bottom:0}
-.invoice-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
-.invoice-card{border-top:5px solid var(--red);background:var(--soft);padding:24px}
-.invoice-card h3{margin:0 0 12px;font-size:24px;line-height:1.15}
-.invoice-card p{margin:0}
-.invoice-controls{margin:22px 0 0;padding-left:22px}
-.invoice-controls li{margin-bottom:12px}
-@media(max-width:900px){.invoice-cards{grid-template-columns:1fr}.invoicing-hero .hero-inner{grid-template-columns:1fr!important}}
-@media(max-width:600px){.invoice-overview{padding:20px}.invoice-statuses strong{font-size:22px}}
+/* Invoicing-only visual treatment; shared navigation and feature pages retain their styles. */
+.invoicing-page .invoicing-hero{padding-block:42px;min-height:500px;display:flex;align-items:center}
+.invoicing-page .invoicing-hero .hero-inner{width:100%;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)!important;gap:48px}
+.invoicing-page .hero h1{max-width:610px;font-size:clamp(36px,3.4vw,50px)!important}
+.invoicing-page .hero h1 .red{display:block;margin-top:8px}
+.invoice-overview{background:var(--soft);color:#171717;padding:28px;border-top:5px solid var(--red)}
+.invoice-overview h2{font-size:clamp(26px,2.5vw,34px);line-height:1.1;margin:0 0 22px;letter-spacing:-.02em}
+.invoice-statuses{display:grid;grid-template-columns:1fr 1fr;gap:20px;border-block:1px solid #ddd;padding-block:18px}
+.invoice-statuses strong{display:block;font-size:25px;line-height:1.2;margin-bottom:6px}
+.invoice-statuses div:first-child strong{color:#bd1018}
+.invoice-statuses span{font-size:15px;line-height:1.4;display:block}
+.invoicing-page .invoice-overview p{font-size:16px;color:#555;margin:20px 0 0}
+.invoicing-page .wrap h2{margin-top:0;letter-spacing:-.02em}
+.invoicing-page .receiving-process{gap:16px}
+.invoicing-page .receiving-process .process-item{background:var(--soft);border-top:5px solid var(--red);padding:22px;text-align:left}
+.invoicing-page .process-item>div{border-top:0;padding-top:0}
+.invoicing-page .receiving-process .process-title{font-size:23px;line-height:1.15}
+.invoicing-page .process-item p{font-size:16px;line-height:1.6}
+body.invoicing-page section.black.invoice-exceptions{min-height:0!important}
+.invoicing-page .invoice-exceptions .visual-pair{grid-template-columns:1.15fr 1fr;gap:48px}
+.invoicing-page .solution-list{padding-left:22px;font-size:17px}
+.invoicing-page .solution-list li{padding-left:7px;margin-bottom:15px}
+.invoicing-page .solution-list li::marker{color:var(--red)}
+.invoice-detail-art{margin:0;background:#181819;border:1px solid #3a3a3a;padding:26px}
+.invoice-detail-art figcaption{font-size:13px;color:#ccc;margin-top:16px}
+.invoice-detail-art .receiving-callout{padding:0;border:0}
+.invoice-detail-art .receiving-callout-title,.invoice-detail-art .receiving-callout-accent{font-size:27px}
+.invoice-detail-art .receiving-callout p{font-size:17px;margin-bottom:22px}
+.invoice-quantity-flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:24px 0}
+.invoice-quantity-flow span{padding:14px 5px;background:#fff;color:#171717;text-align:center;font-size:12px;font-weight:800;border-bottom:4px solid var(--red)}
+.invoice-line-types{display:grid;gap:0;border-top:1px solid #444}
+.invoice-line-types span{padding:10px 0;border-bottom:1px solid #444;display:flex;justify-content:space-between;font-size:14px}
+.invoice-line-types span:after{content:'';width:10px;height:10px;align-self:center;background:#aaa;border-radius:50%}
+.invoice-line-types span:first-child:after,.invoice-line-types span:last-child:after{background:var(--red)}
+.invoice-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin-top:30px}
+.invoice-card{border-top:4px solid var(--red);background:var(--soft);padding:26px}
+.invoice-card img{width:100%;height:100px;object-fit:contain;display:block;margin:0 auto 24px}
+.invoice-card h3{margin:0 0 14px;font-size:24px;line-height:1.15}
+.invoice-card p{margin:0;font-size:17px}
+body.invoicing-page section.black.invoice-departments{min-height:0!important}
+.invoice-team-grid{display:grid;grid-template-columns:1.2fr 1fr 1.25fr;gap:30px;align-items:start}
+.invoice-team-copy{display:contents}
+.invoice-team-copy h3{font-size:25px;margin:0 0 14px}
+.invoice-team-copy>div{border-top:3px solid var(--red);padding-top:20px}
+.invoice-team-copy p{font-size:17px;margin:0}
+.invoice-accounting{border-left:3px solid var(--red);padding-left:28px}
+.invoice-accounting img{display:block;width:180px;height:120px;object-fit:contain;margin:0 0 20px}
+.invoice-accounting .receiving-callout{padding:0;border:0}
+.invoice-accounting .receiving-callout-title{font-size:24px}
+.invoice-accounting p{font-size:17px}
+.invoicing-page .invoice-close{background:#fff}
+.invoicing-page .invoice-close .receiving-dms{background:var(--soft)}
+.invoicing-page .invoice-close a:not(.btn){color:#b91219;font-weight:700;text-underline-offset:4px}
+.invoicing-page .seo-resource-links{border-top:1px solid #ddd}
+.invoicing-page a:focus-visible{outline:3px solid var(--red);outline-offset:5px}
+@media(max-width:1050px){.invoicing-page .receiving-process{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}.invoice-card{padding:22px}.invoice-cards{gap:18px}}
+@media(max-width:900px){.invoicing-page .invoicing-hero .hero-inner{grid-template-columns:1fr!important;gap:28px}.invoicing-page .invoicing-hero{min-height:0}.invoice-overview{transform:none;width:100%;max-width:560px}.invoicing-page .invoice-exceptions .visual-pair,.invoice-team-grid{grid-template-columns:1fr;gap:28px}.invoice-detail-art{max-width:600px}.invoice-cards{grid-template-columns:1fr}.invoice-card{display:grid;grid-template-columns:110px 1fr;gap:22px}.invoice-card img{height:100px;margin:0}.invoice-card h3,.invoice-card p{grid-column:2}.invoice-card img{grid-row:1/3}.invoice-card h3{align-self:end;margin:0}.invoice-accounting{display:grid;grid-template-columns:140px 1fr;gap:20px}.invoice-accounting img{width:140px}.invoice-team-copy{gap:24px}}
+@media(max-width:600px){.invoicing-page .hero h1{font-size:36px!important}.invoicing-page .invoicing-hero{padding-block:34px}.invoicing-page .receiving-process{grid-template-columns:1fr;gap:24px}.invoicing-page .receiving-process .process-item{display:block;border-bottom:0}.invoicing-page .process-item>div{padding-top:0}.invoice-overview{padding:24px;box-shadow:6px 6px 0 #ffffff12;margin-top:24px}.invoice-detail-art{padding:22px}.invoice-team-copy{grid-template-columns:1fr}.invoice-accounting{grid-template-columns:1fr}.invoice-accounting img{width:160px;margin-bottom:0}.invoice-card{grid-template-columns:72px 1fr;gap:16px;padding:22px 18px}.invoice-card img{height:80px}.invoice-card h3{font-size:23px}.invoice-card p{font-size:16px}.invoice-quantity-flow span{font-size:11px}.invoicing-page .wrap h2{font-size:30px}.invoicing-page .hero p{font-size:18px}}
+/* Align the hero and intro with the established feature-page composition. */
+.invoice-intro{display:grid;grid-template-columns:1.15fr 1fr;gap:48px;align-items:center;margin-bottom:34px}
+.invoice-intro .lead{margin-bottom:0}
+.invoicing-page .invoice-overview h2{font-size:27px;margin-bottom:20px}
+.invoicing-page .invoice-overview p{font-size:16px;color:var(--muted)}
+.invoice-hero-art img{height:360px!important;max-height:360px!important}
+.invoice-parts-dept{display:grid;grid-template-columns:76px minmax(0,1fr);gap:16px}
+.invoice-parts-dept>img{width:76px;height:110px;object-fit:contain;object-position:top}
+@media(max-width:900px){.invoice-intro{grid-template-columns:1fr;gap:28px}.invoice-hero-art img{height:320px!important;max-height:320px!important}.invoice-overview{margin-top:0;box-shadow:none}.invoice-team-copy{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.invoice-hero-art img{height:270px!important;max-height:270px!important}.invoice-team-copy{grid-template-columns:1fr}.invoice-overview{margin-top:0;box-shadow:none}}
 </style>
 </head>
-<body>
+<body class="invoicing-page">
 <div data-site-header></div>
 <section class="hero invoicing-hero"><div class="hero-inner">
 <div><h1>SEE WHAT'S OPEN. <span class="red">CONTROL YOUR INVOICES.</span></h1>
 <p>ScanApp brings invoice amounts, shipment details and received quantities into one place so Parts and Accounting can review outstanding items and invoice status.</p>
 <p><strong>Review. Reconcile. Resolve. Account.</strong></p></div>
-<div class="invoice-overview"><h2>EVERY INVOICE.<br>DOWN TO THE LINE.</h2><div class="invoice-statuses"><div><strong>OPEN</strong><span>See outstanding line items</span></div><div><strong>CLOSED</strong><span>See completed invoice amounts</span></div></div><p>Review quantities, line statuses and the accounting journal alongside the invoice.</p></div>
+<div class="receiving-hero-art invoice-hero-art"><img src="graphics/character-sales-female.png" alt="ScanApp team member holding a tablet" width="1024" height="1536" fetchpriority="high"></div>
 </div></section>
-<main class="wrap"><h2>The ScanApp Invoicing Solution</h2>
+<main class="wrap"><div class="invoice-intro"><div><h2>The ScanApp Invoicing Solution</h2>
 <p class="lead">Follow invoice activity from the overview to individual line items, with the detail needed to investigate exceptions.</p>
+</div><div class="invoice-overview"><h2>EVERY INVOICE.<br>DOWN TO THE LINE.</h2><div class="invoice-statuses"><div><strong>OPEN</strong><span>See outstanding line items</span></div><div><strong>CLOSED</strong><span>See completed invoice amounts</span></div></div><p>Review quantities, line statuses and the accounting journal alongside the invoice.</p></div></div>
 <div class="process-grid receiving-process">
 <div class="process-item"><div><div class="process-title">REVIEW</div><p>See invoice number, date, open amount, closed amount, net amount and status in the Invoices overview.</p></div></div>
 <div class="process-item"><div><div class="process-title">COMPARE</div><p>ScanApp matches receipts to invoice line items. Open an invoice to compare ordered, shipped and received quantities, including short or over quantities.</p></div></div>
@@ -57,7 +111,7 @@
 <div class="process-item"><div><div class="process-title">FOLLOW UP</div><p>Set reminder dates for an invoice or an individual invoice item, and add a note to the invoice.</p></div></div>
 <div class="process-item"><div><div class="process-title">ACCOUNT</div><p>Review the invoice's Accounting Journal and access the Accounting Journal Summary from the invoice overview.</p></div></div>
 </div></main>
-<section class="black"><div class="wrap"><h2>Focus on the items that need attention</h2><div class="visual-pair">
+<section class="black invoice-exceptions"><div class="wrap"><h2>Focus on the items that need attention</h2><div class="visual-pair">
 <div><ul class="solution-list">
 <li>Open and closed amounts are visible for each invoice, including invoices with a mix of open and closed lines.</li>
 <li>A numeric invoice status shows the number of open line items; closed invoices display C.</li>
@@ -66,18 +120,18 @@
 <li>The walkthrough shows a shipping charge as an automatically closed line.</li>
 <li>Invoice and line-item reminders provide a date for follow-up; Add Note keeps reference information with the invoice.</li>
 </ul></div>
-<div class="receiving-callout"><div class="receiving-callout-title">FROM INVOICE TOTALS</div><div class="receiving-callout-accent">TO LINE-ITEM DETAIL.</div><p>See the outstanding amount, then drill into the quantities and statuses behind it.</p></div>
+<figure class="invoice-detail-art"><div class="receiving-callout"><div class="receiving-callout-title">FROM INVOICE TOTALS</div><div class="receiving-callout-accent">TO LINE-ITEM DETAIL.</div><p>See the outstanding amount, then drill into the quantities and statuses behind it.</p></div><div class="invoice-quantity-flow" aria-label="Quantities available in invoice detail"><span>ORDERED</span><span>SHIPPED</span><span>RECEIVED</span></div><div class="invoice-line-types" aria-label="Invoice detail categories"><span>Open Items</span><span>Closed Items</span><span>Manually Closed Items</span><span>Automatically Closed Items</span><span>Short Shipped Items</span></div><figcaption>Invoice detail at a glance.</figcaption></figure>
 </div></div></section>
 <section class="wrap"><h2>Find the right invoices. Review the right detail.</h2><div class="invoice-cards">
-<div class="invoice-card"><h3>Filter the overview</h3><p>Use Invoice Date From and To, Days Since Shipped, Invoice Status, Line Item Status and Status Date Type with date ranges. Use Days Since Shipped to focus on aging items awaiting receipt. Apply filters, reset them or search the list.</p></div>
-<div class="invoice-card"><h3>Track line status</h3><p>Review open lines and distinguish manual closure, automatic closure and short-shipped items in the invoice summaries.</p></div>
-<div class="invoice-card"><h3>Access reports</h3><p>Power Invoice Report uses the filters applied in Invoices. Accounting Journal Summary brings journal entries together for the invoices in the current view. A download control is also available.</p></div>
+<div class="invoice-card"><img src="graphics/step4-track.png" alt="" loading="lazy" decoding="async"><h3>Filter the overview</h3><p>Use Invoice Date From and To, Days Since Shipped, Invoice Status, Line Item Status and Status Date Type with date ranges. Use Days Since Shipped to focus on aging items awaiting receipt. Apply filters, reset them or search the list.</p></div>
+<div class="invoice-card"><img src="graphics/icon-accountability.png" alt="" loading="lazy" decoding="async"><h3>Track line status</h3><p>Review open lines and distinguish manual closure, automatic closure and short-shipped items in the invoice summaries.</p></div>
+<div class="invoice-card"><img src="graphics/icon-profitability.png" alt="" loading="lazy" decoding="async"><h3>Access reports</h3><p>Power Invoice Report uses the filters applied in Invoices. Accounting Journal Summary brings journal entries together for the invoices in the current view. A download control is also available.</p></div>
 </div></section>
-<section class="black"><div class="wrap"><h2>PARTS AND ACCOUNTING, WITH THE SAME INVOICE DETAIL</h2><div class="split">
-<div><h3>Parts</h3><p>Compare invoice lines with shipment and receipt quantities, review short or over quantities and follow up on outstanding items.</p><h3>Accounting</h3><p>Review invoice gross, discount and net amounts alongside the Accounting Journal, with account numbers, descriptions and totals.</p></div>
-<div class="receiving-callout"><div class="receiving-callout-title">ACCOUNTING VISIBILITY</div><p>The example journal includes Inventory Stock, Discount All, HST, Freight and Accounts Payable. The Accounting Journal Summary control is available from the invoice list.</p></div>
+<section class="black invoice-departments"><div class="wrap"><h2>PARTS AND ACCOUNTING, WITH THE SAME INVOICE DETAIL</h2><div class="invoice-team-grid">
+<div class="invoice-team-copy"><div class="invoice-parts-dept"><img src="graphics/character-parts-male.png" alt="Parts Department" width="1024" height="1536" loading="lazy" decoding="async"><div><h3>Parts</h3><p>Compare invoice lines with shipment and receipt quantities, review short or over quantities and follow up on outstanding items.</p></div></div><div><h3>Accounting</h3><p>Review invoice gross, discount and net amounts alongside the Accounting Journal, with account numbers, descriptions and totals.</p></div></div>
+<div class="invoice-accounting"><img src="graphics/icon-profitability.png" alt="" loading="lazy" decoding="async"><div class="receiving-callout"><div class="receiving-callout-title">ACCOUNTING VISIBILITY</div><p>The example journal includes Inventory Stock, Discount All, HST, Freight and Accounts Payable. The Accounting Journal Summary control is available from the invoice list.</p></div></div>
 </div></div></section>
-<section class="wrap"><div class="split"><div><h2>Bring invoice exceptions into view.</h2><p class="lead">Give Parts and Accounting a shared view of invoice amounts, outstanding lines and the details behind them.</p><a class="btn action-btn" href="contact.html"><img src="graphics/S%20ICON_WHITE.png" alt="">SEE IT IN ACTION</a></div>
-<div class="receiving-dms"><h3>CONNECTED RECEIVING DETAIL</h3><p>The walkthrough moves from Review Scans and Verified Scans to Invoices. Invoice detail shows ordered, shipped and received quantities together.</p><p><a href="receiving.html">Explore ScanApp Receiving</a></p></div></div></section>
+<section class="invoice-close"><div class="wrap"><div class="split"><div><h2>Bring invoice exceptions into view.</h2><p class="lead">Give Parts and Accounting a shared view of invoice amounts, outstanding lines and the details behind them.</p><a class="btn action-btn" href="contact.html"><img src="graphics/S%20ICON_WHITE.png" alt="">SEE IT IN ACTION</a></div>
+<div class="receiving-dms"><h3>CONNECTED RECEIVING DETAIL</h3><p>The walkthrough moves from Review Scans and Verified Scans to Invoices. Invoice detail shows ordered, shipped and received quantities together.</p><p><a href="receiving.html">Explore ScanApp Receiving</a></p></div></div></div></section>
 <section class="wrap seo-resource-links"><h2>Learn more about dealership parts control</h2><div class="feature-links"><a href="dealership-parts-receiving-software.html"><h3>Dealership Parts Receiving</h3><p>Why receiving is reconciliation—not simply barcode scanning.</p></a><a href="dealership-parts-invoice-reconciliation.html"><h3>Invoice Reconciliation</h3><p>Connect OEM invoices to shipment and physical receipt activity.</p></a><a href="gm-lpo-tracking.html"><h3>GM LPO Tracking</h3><p>Track GM LPOs by VIN from shipment through receipt and issue.</p></a></div></section><div data-site-footer></div><script src="site.js"></script>
 </body></html>
