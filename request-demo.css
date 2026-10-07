@@ -6,3 +6,5 @@
 @media(max-width:480px){.demo-stage{padding:28px 5% 44px}.demo-copy h1{font-size:38px}.demo-intro{font-size:19px}.demo-card{padding:24px 20px}.demo-fields,.demo-choices{grid-template-columns:1fr}.demo-card legend span{display:block}.demo-direct{line-height:1.8}}
 
 .demo-fields .demo-dms{font-size:14px}
+
+.demo-questions{margin-top:24px}.demo-questions label{display:block;font-size:14px;font-weight:700}.demo-questions label span{font-weight:400;color:#666}.demo-questions p{font-size:13px;color:#666;margin:6px 0 8px}.demo-questions textarea{display:block;width:100%;min-height:120px;max-width:100%;resize:vertical;border:1px solid #aaa;border-radius:3px;padding:12px;background:#fff;color:#202124;font:14px Arial,Helvetica,sans-serif;line-height:1.5}
