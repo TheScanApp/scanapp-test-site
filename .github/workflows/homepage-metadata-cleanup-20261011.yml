@@ -1,71 +1,73 @@
-name: Prepare homepage metadata and official icon
+name: Verify live homepage metadata and official icon
 on:
   push:
     branches: [fix/homepage-metadata-icons-20261011]
     paths: [.github/workflows/homepage-metadata-cleanup-20261011.yml]
 permissions:
-  contents: write
+  contents: read
 jobs:
-  prepare:
+  verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 4
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: fix/homepage-metadata-icons-20261011
-      - name: Install pinned image library
-        run: python3 -m pip install --disable-pip-version-check Pillow==12.3.0
-      - name: Apply and verify only the approved changes
+      - name: Check public homepage, Apple icon, favicon and unchanged social image
         run: |
           python3 - <<'PY'
-          from pathlib import Path
-          import hashlib, json
-          from PIL import Image
-          def git_sha(data):
-              return hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
-          page = Path('index.html')
-          original = page.read_bytes()
-          assert git_sha(original) == '73ed754d7b41b99dbaff6d388bc30b24f7c960e7', 'Homepage changed; review before continuing'
-          html = original.decode('utf-8')
-          old_seo = 'ScanApp is dealership parts receiving and reconciliation software that connects DMS purchase orders, OEM shipments, physical receipts and invoices from order to invoice.'
-          old_social = 'Receive parts, reconcile orders, and keep inventory moving.'
-          description = 'ScanApp connects DMS purchase orders, OEM shipments, physical receipts and invoices to help dealerships receive parts and reconcile exceptions.'
-          assert 110 <= len(description) <= 160
-          assert html.count(old_seo) == 1 and html.count(old_social) == 2
-          html = html.replace(old_seo, description).replace(old_social, description)
-          anchor = '  <meta property="og:type" content="website">'
-          assert html.count(anchor) == 1
-          html = html.replace(anchor, anchor + '\n  <meta property="og:site_name" content="ScanApp">\n  <meta property="og:locale" content="en_CA">')
-          viewport = '  <meta name="viewport" content="width=device-width,initial-scale=1">'
-          assert html.count(viewport) == 1
-          html = html.replace(viewport, viewport + '\n  <meta name="theme-color" content="#0b0b0b">')
-          stylesheet = '  <link rel="stylesheet" href="site.css">'
-          assert html.count(stylesheet) == 1 and 'rel="apple-touch-icon"' not in html
-          html = html.replace(stylesheet, '  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">\n' + stylesheet)
-          assert original.decode('utf-8').split('<body>', 1)[1] == html.split('<body>', 1)[1], 'Visible page content changed'
-          for required in ['https://www.thescanapp.com/graphics/scanapp-social-share-official.jpg', '<link rel="canonical" href="https://www.thescanapp.com/">', 'G-S8TZXDFMCD', '/favicon.ico?v=red-s-20261003', '/graphics/S%20ICON_RED.png?v=red-s-20261003']:
-              assert original.decode('utf-8').count(required) == html.count(required)
-          source = Path('graphics/S ICON_RED.png')
-          assert git_sha(source.read_bytes()) == 'e7689289928f05bee7e73dc7095bb0812f6dd995', 'Official S asset changed'
-          mark = Image.open(source).convert('RGBA')
-          mark.thumbnail((144, 144), Image.Resampling.LANCZOS)
-          icon = Image.new('RGB', (180, 180), 'white')
-          icon.paste(mark, ((180-mark.width)//2, (180-mark.height)//2), mark)
-          assert hashlib.sha256(icon.tobytes()).hexdigest() == 'e203b4c145aadabb1f04d8594ae8ba5aeec9481cd11d9a9586fbe53b839b9f0e', 'Icon pixels do not match the prepared official icon'
-          icon.save('apple-touch-icon.png', optimize=True)
-          page.write_bytes(html.encode('utf-8'))
-          favicon = Image.open('favicon.ico')
-          report = {'description_characters': len(description), 'existing_favicon_sizes': sorted(favicon.ico.sizes()), 'icon_dimensions': icon.size, 'icon_git_sha': git_sha(Path('apple-touch-icon.png').read_bytes()), 'index_git_sha': git_sha(page.read_bytes()), 'visible_page_content': 'unchanged', 'approved_social_image': 'unchanged'}
-          print(json.dumps(report, indent=2))
-          with open('/tmp/metadata-review.txt', 'w') as out:
-              out.write(json.dumps(report, indent=2))
+          import hashlib, json, os, struct, time, urllib.request
+          from html.parser import HTMLParser
+          root = 'https://www.thescanapp.com/'
+          def get(url):
+              request = urllib.request.Request(url, headers={'User-Agent': 'ScanAppDeploymentVerification/1.0', 'Cache-Control': 'no-cache'})
+              with urllib.request.urlopen(request, timeout=25) as response:
+                  assert response.status == 200
+                  return response.read(), response.headers.get('Content-Type', '')
+          class Head(HTMLParser):
+              def __init__(self):
+                  super().__init__(); self.meta = {}; self.links = []
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  if tag == 'meta':
+                      key = attrs.get('property', attrs.get('name'))
+                      if key:
+                          self.meta.setdefault(key, []).append(attrs.get('content'))
+                  if tag == 'link': self.links.append(attrs)
+          for attempt in range(8):
+              try:
+                  html_bytes, mime = get(root)
+                  assert 'text/html' in mime
+                  head = Head(); head.feed(html_bytes.decode('utf-8'))
+                  assert head.meta.get('og:site_name') == ['ScanApp']
+                  assert head.meta.get('og:locale') == ['en_CA']
+                  assert head.meta.get('theme-color') == ['#0b0b0b']
+                  description = 'ScanApp connects DMS purchase orders, OEM shipments, physical receipts and invoices to help dealerships receive parts and reconcile exceptions.'
+                  for key in ['description', 'og:description', 'twitter:description']:
+                      assert head.meta.get(key) == [description], key
+                  assert head.meta.get('og:image') == [root + 'graphics/scanapp-social-share-official.jpg']
+                  assert head.meta.get('twitter:image') == [root + 'graphics/scanapp-social-share-official.jpg']
+                  canonical = [a for a in head.links if a.get('rel') == 'canonical']
+                  assert len(canonical) == 1 and canonical[0].get('href') == root
+                  apple = [a for a in head.links if a.get('rel') == 'apple-touch-icon']
+                  assert len(apple) == 1 and apple[0].get('href') == '/apple-touch-icon.png' and apple[0].get('sizes') == '180x180'
+                  icon, icon_mime = get(root + 'apple-touch-icon.png')
+                  assert 'image/png' in icon_mime
+                  assert struct.unpack('>II', icon[16:24]) == (180,180)
+                  assert hashlib.sha256(icon).hexdigest() == 'aca841ff903a98573b135dea9018dd205575f561663d93d97120915c85bc5d5f'
+                  social, social_mime = get(root + 'graphics/scanapp-social-share-official.jpg')
+                  assert 'image/jpeg' in social_mime
+                  assert hashlib.sha256(social).hexdigest() == 'a80590f38b439169494e3fdff52a11c6e77d9988ee92e977e7f0fecc7a73cd4a'
+                  fav, fav_mime = get(root + 'favicon.ico')
+                  assert fav[:4] == b'\x00\x00\x01\x00'
+                  sizes = []
+                  for n in range(struct.unpack('<H', fav[4:6])[0]):
+                      w,h = fav[6+16*n:8+16*n]
+                      sizes.append((w or 256,h or 256))
+                  assert (32,32) in sizes
+                  report = {'result':'PASS','url':root,'site_name':'ScanApp','locale':'en_CA','description_characters':len(description),'apple_icon':'180x180; exact verified image','existing_favicon_sizes':sizes,'social_image':'unchanged; exact hash match','canonical':'unchanged'}
+                  print(json.dumps(report, indent=2))
+                  with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as out:
+                      out.write('```json\n' + json.dumps(report, indent=2) + '\n```\n')
+                  break
+              except Exception:
+                  if attempt == 7: raise
+                  time.sleep(10)
           PY
-      - name: Save verified changes on development branch only
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- index.html apple-touch-icon.png
-          git diff --cached --check
-          git commit -m 'Add official Apple icon and tidy homepage metadata; preserve page and social graphic'
-          git push origin HEAD:fix/homepage-metadata-icons-20261011
-          cat /tmp/metadata-review.txt >> "$GITHUB_STEP_SUMMARY"
