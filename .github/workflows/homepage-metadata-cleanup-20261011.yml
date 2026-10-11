@@ -1,0 +1,71 @@
+name: Prepare homepage metadata and official icon
+on:
+  push:
+    branches: [fix/homepage-metadata-icons-20261011]
+    paths: [.github/workflows/homepage-metadata-cleanup-20261011.yml]
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/homepage-metadata-icons-20261011
+      - name: Install pinned image library
+        run: python3 -m pip install --disable-pip-version-check Pillow==12.3.0
+      - name: Apply and verify only the approved changes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json
+          from PIL import Image
+          def git_sha(data):
+              return hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
+          page = Path('index.html')
+          original = page.read_bytes()
+          assert git_sha(original) == '73ed754d7b41b99dbaff6d388bc30b24f7c960e7', 'Homepage changed; review before continuing'
+          html = original.decode('utf-8')
+          old_seo = 'ScanApp is dealership parts receiving and reconciliation software that connects DMS purchase orders, OEM shipments, physical receipts and invoices from order to invoice.'
+          old_social = 'Receive parts, reconcile orders, and keep inventory moving.'
+          description = 'ScanApp connects DMS purchase orders, OEM shipments, physical receipts and invoices to help dealerships receive parts and reconcile exceptions.'
+          assert 110 <= len(description) <= 160
+          assert html.count(old_seo) == 1 and html.count(old_social) == 2
+          html = html.replace(old_seo, description).replace(old_social, description)
+          anchor = '  <meta property="og:type" content="website">'
+          assert html.count(anchor) == 1
+          html = html.replace(anchor, anchor + '\n  <meta property="og:site_name" content="ScanApp">\n  <meta property="og:locale" content="en_CA">')
+          viewport = '  <meta name="viewport" content="width=device-width,initial-scale=1">'
+          assert html.count(viewport) == 1
+          html = html.replace(viewport, viewport + '\n  <meta name="theme-color" content="#0b0b0b">')
+          stylesheet = '  <link rel="stylesheet" href="site.css">'
+          assert html.count(stylesheet) == 1 and 'rel="apple-touch-icon"' not in html
+          html = html.replace(stylesheet, '  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">\n' + stylesheet)
+          assert original.decode('utf-8').split('<body>', 1)[1] == html.split('<body>', 1)[1], 'Visible page content changed'
+          for required in ['https://www.thescanapp.com/graphics/scanapp-social-share-official.jpg', '<link rel="canonical" href="https://www.thescanapp.com/">', 'G-S8TZXDFMCD', '/favicon.ico?v=red-s-20261003', '/graphics/S%20ICON_RED.png?v=red-s-20261003']:
+              assert original.decode('utf-8').count(required) == html.count(required)
+          source = Path('graphics/S ICON_RED.png')
+          assert git_sha(source.read_bytes()) == 'e7689289928f05bee7e73dc7095bb0812f6dd995', 'Official S asset changed'
+          mark = Image.open(source).convert('RGBA')
+          mark.thumbnail((144, 144), Image.Resampling.LANCZOS)
+          icon = Image.new('RGB', (180, 180), 'white')
+          icon.paste(mark, ((180-mark.width)//2, (180-mark.height)//2), mark)
+          assert hashlib.sha256(icon.tobytes()).hexdigest() == 'e203b4c145aadabb1f04d8594ae8ba5aeec9481cd11d9a9586fbe53b839b9f0e', 'Icon pixels do not match the prepared official icon'
+          icon.save('apple-touch-icon.png', optimize=True)
+          page.write_bytes(html.encode('utf-8'))
+          favicon = Image.open('favicon.ico')
+          report = {'description_characters': len(description), 'existing_favicon_sizes': sorted(favicon.ico.sizes()), 'icon_dimensions': icon.size, 'icon_git_sha': git_sha(Path('apple-touch-icon.png').read_bytes()), 'index_git_sha': git_sha(page.read_bytes()), 'visible_page_content': 'unchanged', 'approved_social_image': 'unchanged'}
+          print(json.dumps(report, indent=2))
+          with open('/tmp/metadata-review.txt', 'w') as out:
+              out.write(json.dumps(report, indent=2))
+          PY
+      - name: Save verified changes on development branch only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- index.html apple-touch-icon.png
+          git diff --cached --check
+          git commit -m 'Add official Apple icon and tidy homepage metadata; preserve page and social graphic'
+          git push origin HEAD:fix/homepage-metadata-icons-20261011
+          cat /tmp/metadata-review.txt >> "$GITHUB_STEP_SUMMARY"
