@@ -1,0 +1,46 @@
+name: Import approved ScanApp social image
+on:
+  push:
+    branches: [fix/social-preview-official-20261010]
+    paths: [.github/workflows/import-approved-social.yml]
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify approved image bytes and save to development branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import base64, hashlib, json, os, urllib.request, urllib.error
+          source = 'https://sdmntprsouthcentralus.oaiusercontent.com/files/00000000-d39c-81f7-b626-53209ae65bf6/raw?se=2026-10-11T13%3A14%3A37Z&sp=r&sv=2026-02-06&sr=b&scid=e2caa9af-5760-5975-a35c-4c4913c74f18&skoid=add8ee7d-5fc7-451e-b06e-a82b2276cf62&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-10-10T22%3A12%3A16Z&ske=2026-10-11T22%3A12%3A16Z&sks=b&skv=2026-02-06&sig=9Qc3TZ647fBFoJ%2B/Df/pFT9GtFWwZXRxLYg/xdwSCT4%3D'
+          with urllib.request.urlopen(source, timeout=45) as response:
+              data = response.read(1000000)
+          assert len(data) == 356526, 'Unexpected image size; aborting'
+          assert hashlib.sha256(data).hexdigest() == 'a80590f38b439169494e3fdff52a11c6e77d9988ee92e977e7f0fecc7a73cd4a', 'Approved image hash mismatch; aborting'
+          expected_blob = '091d556ac49c6be7a463866d62350a1b70a48688'
+          assert hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest() == expected_blob
+          api = 'https://api.github.com/repos/TheScanApp/scanapp-test-site/contents/graphics/scanapp-social-share-official.jpg'
+          headers = {'Authorization': 'Bearer ' + os.environ['GH_TOKEN'], 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'ScanApp-approved-asset-import'}
+          payload = {'message': 'Add exact approved 1200x630 official social-share JPG', 'branch': 'fix/social-preview-official-20261010', 'content': base64.b64encode(data).decode()}
+          try:
+              request = urllib.request.Request(api + '?ref=fix%2Fsocial-preview-official-20261010', headers=headers)
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  existing = json.load(response)
+              if existing['sha'] == expected_blob:
+                  print('Approved image already present and verified:', expected_blob)
+                  raise SystemExit(0)
+              payload['sha'] = existing['sha']
+          except urllib.error.HTTPError as error:
+              if error.code != 404:
+                  raise
+          request = urllib.request.Request(api, data=json.dumps(payload).encode(), headers={**headers, 'Content-Type': 'application/json'}, method='PUT')
+          with urllib.request.urlopen(request, timeout=45) as response:
+              result = json.load(response)
+          assert result['content']['sha'] == expected_blob, 'GitHub blob verification failed'
+          print('Exact approved image uploaded. Verified Git blob:', result['content']['sha'])
+          print('Development branch commit:', result['commit']['sha'])
+          PY
