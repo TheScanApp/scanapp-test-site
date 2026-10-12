@@ -1,0 +1,107 @@
+name: Verify live LPO social preview
+on:
+  push:
+    branches: [fix/lpo-social-preview-20261012]
+    paths: [.github/workflows/verify-lpo-social-20261012.yml]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify live LPO metadata and exact approved image
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, re, time, urllib.request
+          from html.parser import HTMLParser
+
+          REPO = 'https://raw.githubusercontent.com/TheScanApp/scanapp-test-site/'
+          BEFORE = 'f39865e3ad753406f8c7366a5f1bbb0da9be5477'
+          AFTER = '670846e9c3249c329c160f24ad4bd57553cb4a58'
+          PAGE = 'https://www.thescanapp.com/lpo.html'
+          IMAGE = 'https://www.thescanapp.com/graphics/scanapp-social-share-official.jpg'
+          TITLE = 'ScanApp | GM LPO Management'
+          DESCRIPTION = 'Track GM LPO parts from shipment through receipt and optional issuance.  Keep Parts, Sales and Service informed.'
+
+          def fetch(url, agent='ScanApp-public-preview-check/1.0'):
+              request = urllib.request.Request(url, headers={'User-Agent': agent, 'Cache-Control': 'no-cache'})
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  assert response.status == 200, (url, response.status)
+                  return response.read(), response.headers.get('Content-Type', ''), response.geturl()
+
+          class Metadata(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.values = {}
+                  self.canonical = []
+              def handle_starttag(self, tag, attrs):
+                  a = dict(attrs)
+                  if tag == 'meta':
+                      key = a.get('property') or a.get('name')
+                      if key:
+                          self.values.setdefault(key, []).append(a.get('content'))
+                  if tag == 'link' and a.get('rel') == 'canonical':
+                      self.canonical.append(a.get('href'))
+
+          expected = {
+              'og:title': TITLE,
+              'og:description': DESCRIPTION,
+              'og:url': PAGE,
+              'og:image': IMAGE,
+              'og:image:secure_url': IMAGE,
+              'og:image:type': 'image/jpeg',
+              'og:image:width': '1200',
+              'og:image:height': '630',
+              'twitter:card': 'summary_large_image',
+              'twitter:title': TITLE,
+              'twitter:description': DESCRIPTION,
+              'twitter:image': IMAGE,
+          }
+          def check(html):
+              parser = Metadata()
+              parser.feed(html)
+              for key, value in expected.items():
+                  assert parser.values.get(key) == [value], (key, parser.values.get(key))
+              assert parser.canonical == [PAGE], parser.canonical
+              assert 'G-S8TZXDFMCD' in html
+              return parser
+
+          original = fetch(REPO + BEFORE + '/lpo.html')[0].decode('utf-8')
+          updated = fetch(REPO + AFTER + '/lpo.html')[0].decode('utf-8')
+          check(updated)
+          def without_social(html):
+              return re.sub(r'<meta\b[^>]*(?:property="og:|name="twitter:)[^>]*>', '', html, flags=re.I)
+          assert without_social(original) == without_social(updated), 'Unrelated page content changed'
+          original_image = fetch(REPO + BEFORE + '/graphics/scanapp-social-share-official.jpg')[0]
+          assert hashlib.sha256(original_image).hexdigest() == 'a80590f38b439169494e3fdff52a11c6e77d9988ee92e977e7f0fecc7a73cd4a'
+
+          for attempt in range(10):
+              try:
+                  live, mime, final_url = fetch(PAGE)
+                  check(live.decode('utf-8'))
+                  image, image_mime, image_final_url = fetch(IMAGE)
+                  assert 'image/jpeg' in image_mime
+                  assert image == original_image, 'Live graphic differs from approved graphic'
+                  break
+              except Exception as exc:
+                  if attempt == 9:
+                      raise
+                  print('Waiting for deployment:', type(exc).__name__, str(exc), flush=True)
+                  time.sleep(12)
+          print(json.dumps({
+              'result': 'PASS',
+              'page': PAGE,
+              'resolved_url': final_url,
+              'title': TITLE,
+              'description': DESCRIPTION,
+              'image': IMAGE,
+              'image_bytes': len(image),
+              'image_sha256': hashlib.sha256(image).hexdigest(),
+              'duplicate_social_tags': False,
+              'non_social_content_unchanged': True,
+              'canonical_preserved': True,
+              'production_commit': AFTER
+          }, indent=2))
+          PY
